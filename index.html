@@ -1,275 +1,216 @@
-<title>When Attacks Get Answered</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<style>
-/* layout: a single scrolling report column, numbered sections, each pairing a short
-   plain-language explanation with one custom chart; a highlighted strip states the
-   headline finding right under the title, the way a research brief leads with its claim */
-:root{
-  --bg:#faf8f5; --surface:#ffffff; --border:#e6e2d9; --fg:#1d1b17; --muted:#726e63;
-  --red:#d2473f; --red-soft:#f3dbd8; --blue:#2f6fb0; --blue-soft:#dbe6f0;
-  --gray:#aaa69b; --gray-soft:#ece9e1; --callout:#f6efe4;
-  --font-display:'Space Grotesk',system-ui,sans-serif; --font-body:'Inter',system-ui,sans-serif;
-  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#17160f; --surface:#201f17; --border:#3a372c; --fg:#f1efe6; --muted:#a39d8c;
-    --red:#e8766d; --red-soft:#3a2420; --blue:#6fa3da; --blue-soft:#1f2c3a;
-    --gray:#8f8b7d; --gray-soft:#2a271e; --callout:#241f14;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#17160f; --surface:#201f17; --border:#3a372c; --fg:#f1efe6; --muted:#a39d8c;
-  --red:#e8766d; --red-soft:#3a2420; --blue:#6fa3da; --blue-soft:#1f2c3a;
-  --gray:#8f8b7d; --gray-soft:#2a271e; --callout:#241f14;
-  color-scheme:dark;
-}
-*{box-sizing:border-box}
-body{
-  background:var(--bg); color:var(--fg); font-family:var(--font-body);
-  margin:0; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
-  font-size:15px; line-height:1.55;
-}
-.wrap{max-width:860px; margin:0 auto; padding-block:40px 80px;}
-h1,h2,h3{font-family:var(--font-display); letter-spacing:-0.01em; text-wrap:balance; margin:0;}
-.eyebrow{font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
-h1{font-size:clamp(32px,6vw,46px); font-weight:700; margin-top:6px;}
-.meta-line{color:var(--muted); font-size:13.5px; margin-top:10px; font-variant-numeric:tabular-nums;}
-.callout{
-  background:var(--callout); border:1px solid var(--border); border-radius:10px;
-  padding:18px 20px; margin-top:22px;
-}
-.callout b{font-size:16.5px; font-weight:700;}
-.callout p{margin:6px 0 0; color:var(--muted); font-size:14px;}
-section{margin-top:56px;}
-.sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px;}
-.sec-num{
-  font-family:var(--font-mono); font-size:13px; color:var(--surface); background:var(--fg);
-  width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  flex:none;
-}
-.sec-head h2{font-size:21px;}
-.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
-@media (max-width:620px){.grid-2{grid-template-columns:1fr;}}
-.steps{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;}
-.steps li{display:flex; gap:12px; align-items:flex-start;}
-.steps .k{font-family:var(--font-mono); font-size:11px; color:var(--muted); width:70px; flex:none; padding-top:2px; text-transform:uppercase; letter-spacing:.04em;}
-.steps .v{font-size:14px;}
-.steps .v code{font-family:var(--font-mono); background:var(--gray-soft); padding:1px 5px; border-radius:4px; font-size:12.5px;}
-.card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px;}
-.cards{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:18px;}
-@media (max-width:700px){.cards{grid-template-columns:repeat(2,1fr);}}
-.stat .n{font-family:var(--font-display); font-size:26px; font-weight:700; font-variant-numeric:tabular-nums;}
-.stat .n.red{color:var(--red)} .stat .n.blue{color:var(--blue)}
-.stat .l{font-size:12px; color:var(--muted); margin-top:2px;}
-.caption{font-size:13px; color:var(--muted); margin-top:10px;}
-.caption b{color:var(--fg);}
-svg text{font-family:var(--font-body); fill:var(--fg);}
-svg .mono{font-family:var(--font-mono);}
-svg .muted{fill:var(--muted);}
-.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin-top:8px;}
-.legend span{display:inline-flex; align-items:center; gap:6px;}
-.dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
-.footnote{border-top:1px solid var(--border); margin-top:60px; padding-top:18px; font-size:12.5px; color:var(--muted);}
-.footnote div{margin-top:6px;}
-.footnote b{color:var(--fg);}
-</style>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bad Blood</title>
+<meta name="description" content="What happens after one subreddit attacks another: a data story on 858,488 links between Reddit communities.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
 
-<div class="wrap">
+<div class="progress" aria-hidden="true"><div class="progress-bar"></div></div>
 
-  <div class="eyebrow">SNAP Reddit Hyperlink Network &middot; Jan 2014 &ndash; Apr 2017</div>
-  <h1>When Attacks Get Answered</h1>
-  <div class="meta-line">858,488 hyperlinks between subreddits &middot; 41,170 directed pairs with at least one hostile link &middot; 8,556 pairs where we can check for a reply</div>
+<nav class="chapters" aria-label="Chapters">
+  <a href="#hook" data-label="The attack"></a>
+  <a href="#ch1" data-label="Do attacks come back?"></a>
+  <a href="#ch2" data-label="Closeness"></a>
+  <a href="#ch3" data-label="Enemy groups"></a>
+  <a href="#ch4" data-label="A slow burn"></a>
+  <a href="#end" data-label="What it means"></a>
+</nav>
 
-  <div class="callout">
-    <b>Proximity decides whether hostility gets answered &mdash; but only once the two communities actually interact a lot.</b>
-    <p>At low contact, socially close and socially distant pairs hit back at similar, low rates. At high contact the gap opens fast: distant pairs reciprocate hostility 75% of the time, close pairs only 58%. The effect survives removing hub communities and a 2,000-draw permutation test (p&nbsp;=&nbsp;0.0005).</p>
+<header class="hero">
+  <canvas id="net" aria-label="The 180 subreddits with the most enemies, connected by their hostile links"></canvas>
+  <div class="hero-inner">
+    <p class="kicker">A data story &middot; EPFL Applied Data Analysis</p>
+    <h1>Bad <span class="hot-text">Blood</span></h1>
+    <p class="dek">What happens after one subreddit attacks another? We followed <b data-k="totals.links" data-f="int">858,488</b> links between Reddit communities to find out who hits back, when, and why.</p>
+    <div class="hero-stats">
+      <div><span data-k="totals.links" data-f="int">–</span><small>links between subreddits</small></div>
+      <div><span data-k="totals.negative_links" data-f="int">–</span><small>of them hostile</small></div>
+      <div><span>3.3</span><small>years of Reddit</small></div>
+    </div>
+    <p class="hero-hint">Every dot is a subreddit. Red lines are feuds where three communities all fight each other.<span class="desk-only"> Hover to see who.</span></p>
+  </div>
+  <a class="scroll-cue" href="#intro" aria-label="Start reading"><span></span></a>
+</header>
+
+<main>
+
+<section id="intro" class="prose">
+  <p class="lead reveal">On Reddit, communities talk about each other all the time. A post in one subreddit links to a post in another, and sometimes that link is an attack: mocking, calling out, picking a fight.</p>
+  <p class="reveal">The Stanford SNAP dataset labels each of these links as hostile or not. Most are harmless. But <b data-k="totals.neg_share" data-f="pct0">–</b> are hostile, and some pairs of communities keep at it for years.</p>
+  <figure class="feuds reveal">
+    <figcaption class="fig-title">The longest-running feuds</figcaption>
+    <ol id="feuds"></ol>
+    <p class="fig-note">Hostile links between the two communities, in either direction.</p>
+  </figure>
+  <p class="reveal">That raises a simple question. When one community attacks another, does the target hit back?</p>
+</section>
+
+<section id="hook" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">One attack, up close</p>
+    <h2>r/tomorrow picked a fight with r/nintendoswitch</h2>
+  </div>
+  <div class="hook-grid">
+    <div class="prose hook-text">
+      <p class="reveal">r/nintendoswitch is a calm place. Of all the links it ever sends to other communities, only <b data-k="example.base_rate" data-f="pct1">–</b> are hostile.</p>
+      <p class="reveal">After r/tomorrow attacked it, r/nintendoswitch linked back <b data-k="example.n_back" data-f="int">–</b> times. If it had just behaved as usual, the odds that even one of those links would be hostile were about <b data-k="example.expected" data-f="pct0">–</b>.</p>
+      <p class="reveal punch"><b data-k="example.neg_back" data-f="int">–</b> of the <b data-k="example.n_back" data-f="int">–</b> were hostile.</p>
+    </div>
+    <figure class="hook-fig reveal" id="hook-fig"></figure>
+  </div>
+  <p class="prose reveal">This is what we measure for every pair: how a community answers an attack, compared with how it behaves anyway. One example proves nothing. So we did it for all of them.</p>
+</section>
+
+<section id="ch1" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Chapter 1</p>
+    <h2>Do attacks come back?</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">We found <b data-k="n_forward_hostile" data-f="int">–</b> cases of one subreddit sending a hostile link to another. In <b data-k="n_checkable" data-f="int">–</b> of them the target linked back at least once, so we can check how it answered.</p>
+    <p class="reveal">The more two communities interact, the more likely some reply is hostile, simply by volume. So we compare each group with what chance alone predicts for it.</p>
+  </div>
+  <figure class="wide reveal" id="ch1-fig">
+    <div class="toggle" role="tablist" aria-label="Which subreddits to include">
+      <button role="tab" aria-selected="true" data-set="all">All subreddits</button>
+      <button role="tab" aria-selected="false" data-set="clean">Without hub subreddits</button>
+    </div>
+    <div class="chart" id="bars"></div>
+    <div class="legend"><span><i class="sw hot"></i>What happened</span><span><i class="sw neutral"></i>What chance predicts</span></div>
+  </figure>
+  <div class="prose">
+    <p class="reveal">With everyone included, attacked communities hit back a little more than chance says. Now press <em>Without hub subreddits</em>. Hubs are communities like r/subredditdrama that mostly comment on everyone else. Take them out and the extra hostility melts into noise.</p>
+    <p class="reveal callout-line">So, on its own, the answer is: <b>barely</b>. Hitting back is not a general rule on Reddit. But it is not random either, and the next chapter shows when it happens.</p>
+  </div>
+</section>
+
+<section id="ch2" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Chapter 2</p>
+    <h2>It depends on how close they are</h2>
+  </div>
+  <div class="scrolly">
+    <div class="scrolly-graphic"><div class="chart" id="lines"></div>
+      <div class="legend"><span><i class="sw hot"></i>Distant pairs</span><span><i class="sw neutral"></i>Average</span><span><i class="sw calm"></i>Close pairs</span></div>
+    </div>
+    <div class="scrolly-steps">
+      <div class="step" data-step="0"><p>Some subreddits share many users, others share almost none. We measure how close two communities are by how much their user bases overlap.</p></div>
+      <div class="step" data-step="1"><p>When the two sides barely interact, closeness changes nothing. Close or distant, they rarely hit back.</p></div>
+      <div class="step" data-step="2"><p>With some contact, the lines start to separate. Distant communities answer attacks with hostility more often.</p></div>
+      <div class="step" data-step="3"><p>With frequent contact the gap is wide: <b data-k="derived.dist_end" data-f="pct0">–</b> of distant pairs hit back, against <b data-k="derived.close_end" data-f="pct0">–</b> of close pairs. Sharing users seems to cool things down, but only once the two sides really talk.</p></div>
+    </div>
+  </div>
+  <div class="prose">
+    <p class="reveal">Could this pattern be luck? We checked by shuffling closeness randomly across pairs and measuring the gap again, <b data-k="permutation.n_draws" data-f="int">–</b> times.</p>
+  </div>
+  <figure class="wide reveal" id="perm-fig">
+    <figcaption class="fig-title">How strong the effect is with shuffled closeness, vs. in our data</figcaption>
+    <div class="chart" id="perm"></div>
+    <p class="fig-note">Interaction between contact and closeness in a logistic regression, hub subreddits excluded. Further left means closeness matters more as contact grows.</p>
+  </figure>
+  <div class="prose">
+    <p class="reveal callout-line" id="perm-sentence">Random shuffles almost never come close to the real effect. <b>This is the strongest result in our analysis</b>, and it holds with hub subreddits included or removed.</p>
+  </div>
+</section>
+
+<section id="ch3" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Chapter 3</p>
+    <h2>Enemies come in groups</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">So far we looked at pairs. But feuds spread. If two communities both fight a third, do they end up fighting each other too?</p>
+    <p class="reveal">We counted <em>triangles</em>: three subreddits that are all enemies of each other. Then we built random networks where every subreddit keeps exactly its number of enemies, and counted again.</p>
+  </div>
+  <figure class="wide reveal" id="tri-fig">
+    <div class="tri-numbers">
+      <div class="tri-num hot-text"><span data-count="triangles.observed">0</span><small>triangles in the real network</small></div>
+      <div class="tri-num muted-text"><span data-count="triangles.null_mean">0</span><small>in a random network, on average</small></div>
+      <div class="tri-badge"><span data-k="derived.tri_ratio" data-f="x1">–</span><small>more than chance</small></div>
+    </div>
+    <div class="chart" id="tri-strip"></div>
+    <p class="fig-note">Each grey dot is one of 500 random networks. None gets anywhere near the real one.</p>
+  </figure>
+  <div class="prose">
+    <p class="reveal">Hostility clusters. Feuds pull in allies and enemies, and small wars form. Without hub subreddits the effect is even stronger: <b data-k="derived.tri_ratio_clean" data-f="x1">–</b> more triangles than chance.</p>
+    <p class="reveal">Here is the surprise. We expected these groups to be tight neighbourhoods of similar communities. It is the opposite.</p>
+  </div>
+  <div class="duo">
+    <figure class="reveal" id="net-examples"></figure>
+    <figure class="reveal" id="clique-prox"></figure>
+  </div>
+  <div class="prose">
+    <p class="reveal callout-line">One-on-one rivalries happen between communities that already share users. Group feuds pull in communities from <b>distant corners of Reddit</b> that otherwise have little to do with each other.</p>
+  </div>
+</section>
+
+<section id="ch4" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Chapter 4</p>
+    <h2>A slow burn</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">If hitting back were about revenge, we would expect it fast. We looked at the <b data-k="lags.n" data-f="int">–</b> pairs that ended up hostile in both directions, and measured how long the second side took to answer.</p>
+  </div>
+  <figure class="wide reveal" id="timeline-fig"></figure>
+  <figure class="wide reveal" id="lag-fig">
+    <figcaption class="fig-title">Time between the first attack and the first attack back</figcaption>
+    <div class="chart" id="lags"></div>
+  </figure>
+  <div class="prose">
+    <p class="reveal">Only <b data-k="lags.within30" data-f="pct0">–</b> answer within a month. The typical pair waits <b data-k="lags.median" data-f="int">–</b> days. This looks less like retaliation and more like two communities that slowly come to dislike each other.</p>
+    <p class="reveal">And once a pair is hostile, does it get worse? We split each feud's life in two halves and compared how negative the links were.</p>
+  </div>
+  <figure class="reveal narrow" id="esc-fig"></figure>
+  <div class="prose">
+    <p class="reveal callout-line">Flat. Rivalries on Reddit do not escalate. They simmer.</p>
+  </div>
+</section>
+
+<section id="end" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">What it means</p>
+    <h2>Four things we learned</h2>
+  </div>
+  <div class="takeaways">
+    <article class="reveal"><span class="t-num">1</span><h3>Hitting back is not the rule</h3><p>Attacked communities answer with hostility only slightly more than chance, and that small excess disappears without hub subreddits.</p></article>
+    <article class="reveal"><span class="t-num">2</span><h3>Closeness cools things down</h3><p>Communities that share users hit back less, but only once they interact a lot. Our most robust finding.</p></article>
+    <article class="reveal"><span class="t-num">3</span><h3>Feuds form groups</h3><p>Triangles of mutual enemies are about twice as common as chance, and these group feuds bridge distant parts of Reddit.</p></article>
+    <article class="reveal"><span class="t-num">4</span><h3>Slow, then steady</h3><p>Answers take months, not days, and rivalries do not get meaner over time.</p></article>
   </div>
 
-  <section>
-    <div class="sec-head"><span class="sec-num">1</span><h2>How we check if an attack gets answered</h2></div>
-    <div class="grid-2">
-      <div>
-        <ul class="steps">
-          <li><span class="k">Count</span><span class="v">how many links B sent back to A (<code>n</code>), and how many of those were hostile (<code>k</code>)</span></li>
-          <li><span class="k">Baseline</span><span class="v">B's own overall share of hostile outgoing links, across every subreddit B talks to &mdash; not one global rate</span></li>
-          <li><span class="k">Chance</span><span class="v">probability B sends back &ge;1 hostile link anyway: <code>1 &minus; (1 &minus; baseline)^n</code></span></li>
-          <li><span class="k">Decide</span><span class="v">reciprocated if <code>k &ge; 1</code>; compare how often that happens against what chance predicts</span></li>
-        </ul>
-      </div>
-      <div class="card">
-        <svg viewBox="0 0 340 170" width="100%">
-          <text x="0" y="16" font-size="11.5" class="muted">A REAL EXAMPLE</text>
-          <text x="0" y="36" font-size="13" font-weight="700">r/tomorrow attacked r/nintendoswitch</text>
-          <circle cx="24" cy="70" r="14" fill="var(--blue)"/>
-          <text x="24" y="74" font-size="10" fill="white" text-anchor="middle" font-weight="700">A</text>
-          <circle cx="280" cy="70" r="14" fill="var(--blue)"/>
-          <text x="280" y="74" font-size="10" fill="white" text-anchor="middle" font-weight="700">B</text>
-          <line x1="38" y1="70" x2="266" y2="70" stroke="var(--red)" stroke-width="2"/>
-          <text x="152" y="60" font-size="10.5" text-anchor="middle" class="muted">hostile link</text>
-          <text x="10" y="108" font-size="12">nintendoswitch is usually calm: only <tspan font-weight="700" fill="var(--blue)">3.7%</tspan> of ALL the links it ever sends are hostile.</text>
-          <text x="10" y="128" font-size="12">It sent 6 links back to tomorrow &mdash; chance predicted a <tspan font-weight="700">20%</tspan> chance any would be hostile.</text>
-          <text x="10" y="150" font-size="13" font-weight="700" fill="var(--red)">4 of those 6 were hostile. Reciprocated, far past what chance predicted.</text>
-        </svg>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="sec-num">2</span><h2>What the rule finds, overall</h2></div>
-    <div class="cards">
-      <div class="card stat"><div class="n">41,170</div><div class="l">directed pairs sent &ge;1 hostile link</div></div>
-      <div class="card stat"><div class="n">8,556</div><div class="l">pairs where a reply is possible</div></div>
-      <div class="card stat red"><div class="n red">16&ndash;67%</div><div class="l">share that get a hostile reply back</div></div>
-      <div class="card stat"><div class="n">0 of 3</div><div class="l">volume groups still significant after removing hubs</div></div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <svg viewBox="0 0 640 230" width="100%">
-        <!-- bars: 3 groups, observed (red) vs expected (gray) -->
-        <g font-size="12" class="mono">
-          <!-- group 1 -->
-          <rect x="60" y="150" width="34" height="48" fill="var(--red)"/>
-          <rect x="98" y="156" width="34" height="42" fill="var(--gray)"/>
-          <text x="77" y="144" text-anchor="middle" font-weight="700" fill="var(--red)">16%</text>
-          <text x="115" y="150" text-anchor="middle" fill="var(--muted)">14%</text>
-          <text x="96" y="214" text-anchor="middle" class="muted" font-family="var(--font-body)">a little contact</text>
-          <!-- group 2 -->
-          <rect x="250" y="88" width="34" height="110" fill="var(--red)"/>
-          <rect x="288" y="92" width="34" height="106" fill="var(--gray)"/>
-          <text x="267" y="82" text-anchor="middle" font-weight="700" fill="var(--red)">38%</text>
-          <text x="305" y="86" text-anchor="middle" fill="var(--muted)">36%</text>
-          <text x="286" y="214" text-anchor="middle" class="muted" font-family="var(--font-body)">some contact</text>
-          <!-- group 3 -->
-          <rect x="440" y="23" width="34" height="175" fill="var(--red)"/>
-          <rect x="478" y="25" width="34" height="173" fill="var(--gray)"/>
-          <text x="457" y="17" text-anchor="middle" font-weight="700" fill="var(--red)">67%</text>
-          <text x="495" y="19" text-anchor="middle" fill="var(--muted)">66%</text>
-          <text x="476" y="214" text-anchor="middle" class="muted" font-family="var(--font-body)">a lot of contact</text>
-        </g>
-        <line x1="40" y1="198" x2="600" y2="198" stroke="var(--border)"/>
-      </svg>
-      <div class="legend">
-        <span><i class="dot" style="background:var(--red)"></i>what actually happens</span>
-        <span><i class="dot" style="background:var(--gray)"></i>what chance alone predicts</span>
-      </div>
-      <div class="caption">Hostility does get answered a little more than chance predicts &mdash; but once we remove subreddits that mainly comment on others instead of fighting as equals, the gap shrinks and is no longer reliably different from chance in any group (z&nbsp;=&nbsp;1.4,&nbsp;1.8,&nbsp;0.8). <b>Raw reciprocation is not a settled result on its own.</b></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="sec-num">3</span><h2>Does being close change whether it gets answered?</h2></div>
-    <div class="card">
-      <svg viewBox="0 0 640 260" width="100%">
-        <g class="mono" font-size="11" fill="var(--muted)">
-          <text x="40" y="226" text-anchor="middle">a little contact</text>
-          <text x="320" y="226" text-anchor="middle">some contact</text>
-          <text x="600" y="226" text-anchor="middle">frequent contact</text>
-        </g>
-        <!-- distant: red, rises steeply; average: gray; close: blue, rises least -->
-        <polyline points="40,205 320,150 600,55" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/>
-        <polyline points="40,208 320,165 600,95" fill="none" stroke="var(--gray)" stroke-width="3" stroke-linecap="round"/>
-        <polyline points="40,210 320,172 600,118" fill="none" stroke="var(--blue)" stroke-width="3" stroke-linecap="round"/>
-        <g>
-          <circle cx="40" cy="205" r="5" fill="var(--red)"/><circle cx="320" cy="150" r="5" fill="var(--red)"/><circle cx="600" cy="55" r="5" fill="var(--red)"/>
-          <circle cx="40" cy="208" r="5" fill="var(--gray)"/><circle cx="320" cy="165" r="5" fill="var(--gray)"/><circle cx="600" cy="95" r="5" fill="var(--gray)"/>
-          <circle cx="40" cy="210" r="5" fill="var(--blue)"/><circle cx="320" cy="172" r="5" fill="var(--blue)"/><circle cx="600" cy="118" r="5" fill="var(--blue)"/>
-        </g>
-        <text x="610" y="50" font-size="13" font-weight="700" fill="var(--red)">distant pairs</text>
-        <text x="610" y="90" font-size="13" font-weight="700" fill="var(--gray)">average pairs</text>
-        <text x="610" y="130" font-size="13" font-weight="700" fill="var(--blue)">close pairs</text>
-      </svg>
-      <div class="caption">Share of pairs where the attacked side hits back, by how much the two sides interact and how socially close they are.</div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <svg viewBox="0 0 640 130" width="100%">
-        <line x1="320" y1="20" x2="320" y2="110" stroke="var(--border)" stroke-dasharray="3,3"/>
-        <text x="320" y="14" text-anchor="middle" font-size="10.5" class="muted">no effect</text>
-        <g class="mono" font-size="12">
-          <text x="30" y="48">all pairs</text>
-          <circle cx="188" cy="44" r="6" fill="var(--red)"/>
-          <text x="330" y="48" fill="var(--red)" font-weight="700">&minus;1.06, p &lt; 0.001</text>
-
-          <text x="30" y="88">hub communities removed</text>
-          <circle cx="238" cy="84" r="6" fill="var(--red)"/>
-          <text x="330" y="88" fill="var(--red)" font-weight="700">&minus;0.75, p &lt; 0.001</text>
-        </g>
-      </svg>
-      <div class="caption">The <b>contact &times; closeness</b> interaction from a logistic regression of "got a hostile reply back" &mdash; negative means closeness matters more as contact increases. Confirmed with a permutation test: shuffling closeness across pairs reproduces an effect this strong in only 1 of 2,000 tries (p&nbsp;=&nbsp;0.0005).</div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="sec-num">4</span><h2>Hostility clusters into enemy groups</h2></div>
-    <div class="grid-2">
-      <div class="card">
-        <svg viewBox="0 0 300 220" width="100%">
-          <g class="mono" font-size="11" fill="var(--muted)">
-            <text x="75" y="214" text-anchor="middle">in our data</text>
-            <text x="225" y="214" text-anchor="middle">random network,</text>
-            <text x="225" y="227" text-anchor="middle" hidden>same size</text>
-          </g>
-          <rect x="50" y="26" width="50" height="178" fill="var(--red)"/>
-          <text x="75" y="18" text-anchor="middle" font-weight="700" fill="var(--red)">9,964</text>
-          <rect x="200" y="124" width="50" height="80" fill="var(--gray)"/>
-          <text x="225" y="116" text-anchor="middle" font-weight="700" fill="var(--muted)">4,451</text>
-        </svg>
-        <div class="caption">Closed triangles (3 communities, all enemies of each other) &mdash; <b>2.2&times;</b> more than a randomly rewired network with the same number of enemies per community would produce (p&nbsp;&lt;&nbsp;0.005). Excluding hub communities, the ratio grows to 3.1&times;.</div>
-      </div>
-
-      <div class="card">
-        <svg viewBox="0 0 300 220" width="100%">
-          <text x="8" y="18" font-size="11" class="muted">TWO REAL EXAMPLES</text>
-          <text x="75" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="var(--gray)">isolated rivalry</text>
-          <line x1="35" y1="110" x2="115" y2="110" stroke="var(--gray)" stroke-width="2.5"/>
-          <circle cx="35" cy="110" r="11" fill="var(--blue)"/><circle cx="115" cy="110" r="11" fill="var(--blue)"/>
-          <text x="75" y="134" text-anchor="middle" font-size="10.5" class="muted">proximity 0.54</text>
-
-          <text x="225" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">clique</text>
-          <polygon points="225,76 195,126 255,126" fill="none" stroke="var(--red)" stroke-width="2.5"/>
-          <circle cx="225" cy="76" r="9" fill="var(--blue)"/><circle cx="195" cy="126" r="9" fill="var(--blue)"/><circle cx="255" cy="126" r="9" fill="var(--blue)"/>
-          <text x="225" y="150" text-anchor="middle" font-size="10.5" class="muted">proximity 0.37</text>
-        </svg>
-        <div class="caption">Rivalries that are part of a clique happen between <b>more socially distant</b> communities than one-off rivalries &mdash; the opposite of what we expected, and it holds after removing hub communities (0.65 vs. 0.41).</div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="sec-num">5</span><h2>How retaliation unfolds in time</h2></div>
-    <div class="grid-2">
-      <div class="card">
-        <svg viewBox="0 0 300 110" width="100%">
-          <rect x="10" y="30" width="46" height="36" fill="var(--red)"/>
-          <rect x="56" y="30" width="234" height="36" fill="var(--gray)"/>
-          <text x="33" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">16%</text>
-          <text x="173" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)">84%</text>
-          <text x="33" y="86" text-anchor="middle" font-size="10.5" class="muted">within a month</text>
-          <text x="173" y="86" text-anchor="middle" font-size="10.5" class="muted">later, or never</text>
-        </svg>
-        <div class="caption">Among 1,388 pairs that are hostile in both directions, time between the first attack and the first attack back. <b>Retaliation is rarely fast</b> &mdash; median 183 days.</div>
-      </div>
-      <div class="card">
-        <svg viewBox="0 0 300 160" width="100%">
-          <g class="mono" font-size="12">
-            <rect x="40" y="52" width="60" height="78" fill="var(--gray)"/>
-            <text x="70" y="44" text-anchor="middle" font-weight="700">32%</text>
-            <text x="70" y="146" text-anchor="middle" font-size="10.5" class="muted" font-family="var(--font-body)">first half</text>
-            <rect x="180" y="52" width="60" height="78" fill="var(--gray)"/>
-            <text x="210" y="44" text-anchor="middle" font-weight="700">32%</text>
-            <text x="210" y="146" text-anchor="middle" font-size="10.5" class="muted" font-family="var(--font-body)">second half</text>
-          </g>
-        </svg>
-        <div class="caption">Share of a hostile pair's interactions that are negative, first half of its active period vs. second half. <b>No real difference</b> (p&nbsp;=&nbsp;0.17) &mdash; rivalries do not get meaner with time.</div>
-      </div>
-    </div>
-  </section>
-
-  <div class="footnote">
-    <div><b>Hostile link</b> &mdash; SNAP's own sentiment label on the hyperlink (link_sentiment = &minus;1). <b>Hub/meta community</b> &mdash; a subreddit with &ge;100 distinct targets and a sent/received ratio &ge;5 (mostly comments on others rather than fighting as an equal; same rule used across this project).</div>
-    <div><b>Limits.</b> A subreddit with very few outgoing links gets a noisy baseline rate. The clustering test (section 4) uses the stricter &ge;3-negative-link pair definition (5,048 pairs); the reciprocity test (sections 1&ndash;3) uses any pair with &ge;1 hostile link where a reply is possible (8,556 pairs) &mdash; the two are not the same population.</div>
+  <div class="prose">
+    <details class="methods reveal">
+      <summary>How we measured it</summary>
+      <dl>
+        <dt>Hostile link</dt><dd>SNAP's own label for the link (link_sentiment = &minus;1), from Kumar et al., <i>Community Interaction and Conflict on the Web</i>, WWW 2018.</dd>
+        <dt>Chance baseline</dt><dd>For an attack from A to B, the probability that B sends at least one hostile link back anyway is 1 &minus; (1 &minus; p<sub>B</sub>)<sup>n</sup>, where p<sub>B</sub> is B's share of hostile links over everything it sends and n is the number of links B sent back to A.</dd>
+        <dt>Hub subreddits</dt><dd>Communities linking to at least 100 others and sending at least five times more links than they receive. Same rule as in the rest of our project.</dd>
+        <dt>Closeness</dt><dd>Cosine similarity of the two subreddits' SNAP embeddings, which are built from users posting in both. Independent of the hyperlinks themselves.</dd>
+        <dt>Main model</dt><dd>Logistic regression of "B sent a hostile link back" on log(links back), closeness and their interaction. Interaction: <span data-k="model.all.coef" data-f="coef">–</span> on all pairs, <span data-k="model.clean.coef" data-f="coef">–</span> without hubs (both p &lt; 0.001), confirmed with a permutation test.</dd>
+        <dt>Triangles</dt><dd>Hostile pair = at least 3 hostile links between two subreddits (<span data-k="triangles.edges" data-f="int">–</span> pairs). Null model: configuration model keeping every subreddit's number of enemies, 500 draws.</dd>
+        <dt>Escalation</dt><dd>Share of negative links in the first vs. second half of each hostile pair's activity, split at its median timestamp; Wilcoxon signed-rank test, p = <span data-k="escalation.p" data-f="p">–</span>.</dd>
+      </dl>
+      <p><b>Limits.</b> SNAP's label follows tone, not intent. Small subreddits get noisy baselines. The reciprocity analysis (any hostile link) and the triangle analysis (3+ hostile links) do not use the same set of pairs. Everything here is correlation: we observe Reddit, we do not run experiments on it.</p>
+    </details>
   </div>
+</section>
 
-</div>
+</main>
+
+<footer class="site-footer">
+  <p>EPFL CS-401 Applied Data Analysis, 2026 &middot; Data: Stanford SNAP Reddit Hyperlink Network, January 2014 to April 2017</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
