@@ -7,175 +7,201 @@
 <meta name="description" content="What happens after one subreddit attacks another. A study of 858,488 links between Reddit communities.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css?v=4">
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
 
-<header class="top prose">
-  <p class="course">Applied Data Analysis, EPFL, 2026 &middot; Group 21</p>
-  <h1>Bad Blood</h1>
-  <p class="subtitle">What happens after one subreddit attacks another</p>
-  <p>On Reddit, communities talk about each other all the time. A post in one subreddit links to a post in another, and sometimes that link is an attack: people mock the other community, call it out or try to start a fight.</p>
-  <p>We used the Stanford SNAP dataset, which contains <span data-k="totals.links" data-f="int">858,488</span> links between subreddits from January 2014 to April 2017. Each link has a label that says if it is hostile or not. About <span data-k="totals.neg_share" data-f="pct0">10%</span> of them are.</p>
+<div class="progress" aria-hidden="true"><div class="progress-bar"></div></div>
+
+<nav class="chapters" aria-label="Sections">
+  <a href="#hook" data-label="An example"></a>
+  <a href="#ch1" data-label="Do attacks get answered?"></a>
+  <a href="#ch2" data-label="Closeness"></a>
+  <a href="#ch3" data-label="Groups"></a>
+  <a href="#ch4" data-label="Time"></a>
+  <a href="#end" data-label="Summary"></a>
+</nav>
+
+<header class="hero">
+  <canvas id="net" aria-label="Network of subreddits connected by hostile links"></canvas>
+  <div class="hero-inner">
+    <p class="kicker">Applied Data Analysis &middot; EPFL &middot; Group 21</p>
+    <h1>Bad <span class="hot-text">Blood</span></h1>
+    <p class="dek">What happens after one subreddit attacks another? We looked at <b data-k="totals.links" data-f="int">858,488</b> links between Reddit communities to see who answers, when, and why.</p>
+    <div class="hero-stats">
+      <div><span data-k="totals.links" data-f="int">–</span><small>links between subreddits</small></div>
+      <div><span data-k="totals.negative_links" data-f="int">–</span><small>of them hostile</small></div>
+      <div><span>3.3</span><small>years of Reddit</small></div>
+    </div>
+    <p class="hero-hint">Each dot is a subreddit. Red lines belong to groups of three communities that are all hostile to each other.<span class="desk-only"> Move over a dot to see its name.</span></p>
+  </div>
+  <a class="scroll-cue" href="#intro" aria-label="Start reading"><span></span></a>
 </header>
 
 <main>
 
-<figure class="wide" id="net-fig">
-  <canvas id="net" aria-label="Network of subreddits connected by hostile links"></canvas>
-  <figcaption><b>Figure 1.</b> A sample of <span data-k="hero.nodes.length" data-f="int">–</span> subreddits. A line means the two communities have sent each other at least 3 hostile links. Red lines belong to a group of three communities that are all hostile to each other. Move over a dot to see which subreddit it is.</figcaption>
-</figure>
-
-<section class="prose">
-  <p>Some pairs of communities keep doing this for years. These are the ten pairs with the most hostile links between them:</p>
-  <figure class="feuds">
+<section id="intro" class="prose">
+  <p class="lead reveal">On Reddit, communities talk about each other all the time. A post in one subreddit links to a post in another, and sometimes that link is an attack: people mock the other community, call it out or try to start a fight.</p>
+  <p class="reveal">We used the Stanford SNAP dataset, which covers January 2014 to April 2017. Each link has a label that says if it is hostile or not. About <b data-k="totals.neg_share" data-f="pct0">–</b> of them are, and some pairs of communities keep doing this for years.</p>
+  <figure class="feuds reveal">
+    <figcaption class="fig-title">The ten pairs with the most hostile links</figcaption>
     <ol id="feuds"></ol>
-    <figcaption><b>Figure 2.</b> Number of hostile links between the two communities, in both directions.</figcaption>
+    <p class="fig-note">Number of hostile links between the two communities, in both directions.</p>
   </figure>
-  <p>In this part of the project we ask what happens after an attack. Does the other community answer? Does it depend on who they are? And how long does it take?</p>
+  <p class="reveal">In this part of the project we ask what happens after an attack. Does the other community answer? Does it depend on who they are? And how long does it take?</p>
 </section>
 
-<section id="hook">
-  <div class="prose">
-    <h2>An example: r/tomorrow and r/nintendoswitch</h2>
-    <p>r/nintendoswitch is a calm community. Of all the links it sends to other subreddits, only <span data-k="example.base_rate" data-f="pct1">–</span> are hostile.</p>
-    <p>After r/tomorrow sent it a hostile link, r/nintendoswitch linked back <span data-k="example.n_back" data-f="int">–</span> times. If it had behaved as it usually does, the probability of at least one hostile link among those <span data-k="example.n_back" data-f="int">–</span> would be about <span data-k="example.expected" data-f="pct0">–</span>. In reality, <span data-k="example.neg_back" data-f="int">–</span> of them were hostile.</p>
+<section id="hook" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">An example</p>
+    <h2>r/tomorrow and r/nintendoswitch</h2>
   </div>
-  <figure class="mid">
-    <div id="hook-fig"></div>
-    <figcaption><b>Figure 3.</b> The links r/nintendoswitch sent back to r/tomorrow. Filled dots are hostile links.</figcaption>
-  </figure>
-  <div class="prose">
-    <p>This is the comparison we make for every pair: how a community answers an attack, against how it behaves in general. One pair does not tell us much, so we repeated it for all of them.</p>
+  <div class="hook-grid">
+    <div class="prose hook-text">
+      <p class="reveal">r/nintendoswitch is a calm community. Of all the links it sends to other subreddits, only <b data-k="example.base_rate" data-f="pct1">–</b> are hostile.</p>
+      <p class="reveal">After r/tomorrow sent it a hostile link, r/nintendoswitch linked back <b data-k="example.n_back" data-f="int">–</b> times. If it had behaved as it usually does, the probability of at least one hostile link among them would be about <b data-k="example.expected" data-f="pct0">–</b>.</p>
+      <p class="reveal punch">In reality, <b data-k="example.neg_back" data-f="int">–</b> of the <b data-k="example.n_back" data-f="int">–</b> were hostile.</p>
+    </div>
+    <figure class="hook-fig reveal" id="hook-fig"></figure>
   </div>
+  <p class="prose reveal">This is the comparison we make for every pair: how a community answers an attack, against how it behaves in general. One pair does not tell us much, so we repeated it for all of them.</p>
 </section>
 
-<section id="ch1">
-  <div class="prose">
+<section id="ch1" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Part 1</p>
     <h2>Do attacks get answered?</h2>
-    <p>We found <span data-k="n_forward_hostile" data-f="int">–</span> cases where one subreddit sent a hostile link to another. In <span data-k="n_checkable" data-f="int">–</span> of them the other community linked back at least once, so we can look at how it answered.</p>
-    <p>There is one problem. The more links a community sends back, the more likely it is that one of them is hostile, just because there are more of them. To be fair, we split the pairs in three groups by how many links were sent back, and in each group we compare with what we would expect by chance.</p>
   </div>
-  <figure class="wide" id="ch1-fig">
+  <div class="prose">
+    <p class="reveal">We found <b data-k="n_forward_hostile" data-f="int">–</b> cases where one subreddit sent a hostile link to another. In <b data-k="n_checkable" data-f="int">–</b> of them the other community linked back at least once, so we can look at how it answered.</p>
+    <p class="reveal">There is one problem. The more links a community sends back, the more likely it is that one of them is hostile, just because there are more of them. To be fair, we split the pairs in three groups by how many links were sent back, and in each group we compare with what we would expect by chance.</p>
+  </div>
+  <figure class="wide reveal" id="ch1-fig">
     <div class="toggle" role="tablist" aria-label="Which subreddits to include">
       <button role="tab" aria-selected="true" data-set="all">All subreddits</button>
       <button role="tab" aria-selected="false" data-set="clean">Without hubs</button>
     </div>
     <div class="chart" id="bars"></div>
-    <div class="legend"><span><i class="sw hot"></i>Share of pairs with a hostile answer</span><span><i class="sw neutral"></i>Expected by chance</span></div>
-    <figcaption><b>Figure 4.</b> Share of attacked communities that sent at least one hostile link back. Use the buttons to remove hub subreddits.</figcaption>
+    <div class="legend"><span><i class="sw hot"></i>Pairs with a hostile answer</span><span><i class="sw neutral"></i>Expected by chance</span></div>
   </figure>
   <div class="prose">
-    <p>With all subreddits, attacked communities answer with hostility a bit more than expected. But some subreddits, like r/subredditdrama, exist mainly to comment on other communities, and they are in a lot of these pairs. We call them hubs. If we remove them (the second button), the difference becomes too small to separate from noise.</p>
-    <p>So we cannot say that hostility is answered with hostility in general. What we found instead is that it depends a lot on the pair.</p>
+    <p class="reveal">With all subreddits, attacked communities answer with hostility a bit more than expected. But some subreddits, like r/subredditdrama, exist mainly to comment on other communities, and they are in a lot of these pairs. We call them hubs. If we remove them (the second button), the difference becomes too small to separate from noise.</p>
+    <p class="reveal callout-line">So we cannot say that hostility is answered with hostility in general. What we found instead is that it depends a lot on the pair.</p>
   </div>
 </section>
 
-<section id="ch2">
-  <div class="prose">
+<section id="ch2" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Part 2</p>
     <h2>It depends on how close the two communities are</h2>
-    <p>Two subreddits are close if many of the same users post in both. We used this to split the pairs in three groups: distant, average and close.</p>
   </div>
   <div class="scrolly">
-    <div class="scrolly-graphic">
-      <div class="chart" id="lines"></div>
-      <p class="figcap"><b>Figure 5.</b> Share of pairs where the attacked community answered with a hostile link, by amount of contact and by closeness. Hubs are excluded.</p>
+    <div class="scrolly-graphic"><div class="chart" id="lines"></div>
+      <div class="legend"><span><i class="sw hot"></i>Distant pairs</span><span><i class="sw neutral"></i>Average</span><span><i class="sw calm"></i>Close pairs</span></div>
     </div>
     <div class="scrolly-steps">
-      <div class="step" data-step="0"><p>The chart shows how often the attacked community sends a hostile link back. From left to right, the two communities have more contact.</p></div>
+      <div class="step" data-step="0"><p>Two subreddits are close if many of the same users post in both. We used this to split the pairs in three groups: distant, average and close.</p></div>
       <div class="step" data-step="1"><p>When there is little contact, closeness makes no difference. In the three groups the attacked community rarely answers with hostility.</p></div>
       <div class="step" data-step="2"><p>With more contact the groups start to separate. Distant communities answer with hostility more often than close ones.</p></div>
-      <div class="step" data-step="3"><p>With frequent contact, <span data-k="derived.dist_end" data-f="pct0">–</span> of distant pairs answer with hostility, and <span data-k="derived.close_end" data-f="pct0">–</span> of close pairs. Sharing users seems to make the answer less hostile, but only when the two communities interact a lot.</p></div>
+      <div class="step" data-step="3"><p>With frequent contact, <b data-k="derived.dist_end" data-f="pct0">–</b> of distant pairs answer with hostility, and <b data-k="derived.close_end" data-f="pct0">–</b> of close pairs. Sharing users seems to make the answer less hostile, but only when the two communities interact a lot.</p></div>
     </div>
   </div>
   <div class="prose">
-    <p>To check that this is not a coincidence, we shuffled the closeness values between pairs, so that they no longer mean anything, and measured the effect again. We did this <span data-k="permutation.n_draws" data-f="int">–</span> times.</p>
+    <p class="reveal">To check that this is not a coincidence, we shuffled the closeness values between pairs, so that they no longer mean anything, and measured the effect again. We did this <b data-k="permutation.n_draws" data-f="int">–</b> times.</p>
   </div>
-  <figure class="wide" id="perm-fig">
+  <figure class="wide reveal" id="perm-fig">
+    <figcaption class="fig-title">Size of the effect with shuffled closeness, and in the real data</figcaption>
     <div class="chart" id="perm"></div>
-    <figcaption><b>Figure 6.</b> Size of the effect with shuffled closeness (grey) and in the real data (red). The effect is the interaction between contact and closeness in a logistic regression. More to the left means that closeness matters more when there is more contact.</figcaption>
+    <p class="fig-note">The effect is the interaction between contact and closeness in a logistic regression, without hubs. More to the left means that closeness matters more when there is more contact.</p>
   </figure>
   <div class="prose">
-    <p id="perm-sentence"></p>
+    <p class="reveal callout-line" id="perm-sentence"></p>
   </div>
 </section>
 
-<section id="ch3">
-  <div class="prose">
+<section id="ch3" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Part 3</p>
     <h2>Hostile pairs form groups</h2>
-    <p>Until now we looked at pairs. But if two communities are both hostile to a third one, are they also hostile to each other?</p>
-    <p>To answer this we counted triangles: groups of three subreddits where every pair is hostile. Then we built 500 random networks in which each subreddit keeps the same number of hostile pairs but with random partners, and counted the triangles there.</p>
   </div>
-  <figure class="wide" id="tri-fig">
+  <div class="prose">
+    <p class="reveal">Until now we looked at pairs. But if two communities are both hostile to a third one, are they also hostile to each other?</p>
+    <p class="reveal">To answer this we counted triangles: groups of three subreddits where every pair is hostile. Then we built 500 random networks in which each subreddit keeps the same number of hostile pairs but with random partners, and counted the triangles there.</p>
+  </div>
+  <figure class="wide reveal" id="tri-fig">
+    <div class="tri-numbers">
+      <div class="tri-num hot-text"><span data-count="triangles.observed">0</span><small>triangles in the real network</small></div>
+      <div class="tri-num muted-text"><span data-count="triangles.null_mean">0</span><small>in a random network, on average</small></div>
+      <div class="tri-badge"><span data-k="derived.tri_ratio" data-f="x1">–</span><small>more than expected</small></div>
+    </div>
     <div class="chart" id="tri-strip"></div>
-    <figcaption><b>Figure 7.</b> Number of triangles in each of the 500 random networks (grey) and in the real network (red).</figcaption>
+    <p class="fig-note">Each grey dot is one of the 500 random networks.</p>
   </figure>
   <div class="prose">
-    <p>The real network has <span data-k="triangles.observed" data-f="int">–</span> triangles. The random ones have <span data-k="triangles.null_mean" data-f="int">–</span> on average, so there are <span data-k="derived.tri_ratio" data-f="x1">–</span> more than expected. Without hubs the difference is bigger (<span data-k="derived.tri_ratio_clean" data-f="x1">–</span>).</p>
-    <p>We expected these groups to be made of similar communities that share users. We found the opposite.</p>
+    <p class="reveal">The real network has about twice as many triangles as the random ones. Without hubs the difference is bigger (<b data-k="derived.tri_ratio_clean" data-f="x1">–</b>).</p>
+    <p class="reveal">We expected these groups to be made of similar communities that share users. We found the opposite.</p>
   </div>
   <div class="duo">
-    <figure>
-      <div id="net-examples"></div>
-      <figcaption><b>Figure 8.</b> A hostile pair that is alone, and a triangle. Both are real.</figcaption>
-    </figure>
-    <figure>
-      <div id="clique-prox"></div>
-      <figcaption><b>Figure 9.</b> Average closeness of the two communities in a hostile pair.</figcaption>
-    </figure>
+    <figure class="reveal" id="net-examples"></figure>
+    <figure class="reveal" id="clique-prox"></figure>
   </div>
   <div class="prose">
-    <p>Hostile pairs that are alone are usually two communities that share many users, often a subreddit and its parody. Pairs inside a group are more distant. It looks like group conflicts connect parts of Reddit that normally do not have much in common.</p>
+    <p class="reveal callout-line">Hostile pairs that are alone are usually two communities that share many users, often a subreddit and its parody. Pairs inside a group are more distant. It looks like group conflicts connect parts of Reddit that normally do not have much in common.</p>
   </div>
 </section>
 
-<section id="ch4">
-  <div class="prose">
+<section id="ch4" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Part 4</p>
     <h2>It takes months, and it does not get worse</h2>
-    <p>If answering an attack was a quick reaction, it should happen in a few days. We took the <span data-k="lags.n" data-f="int">–</span> pairs that are hostile in both directions and measured the time between the first attack and the first answer. This is one of them:</p>
   </div>
-  <figure class="wide">
-    <div id="timeline-fig"></div>
-    <figcaption><b>Figure 10.</b> A pair with the median waiting time.</figcaption>
-  </figure>
-  <figure class="wide" id="lag-fig">
+  <div class="prose">
+    <p class="reveal">If answering an attack was a quick reaction, it should happen in a few days. We took the <b data-k="lags.n" data-f="int">–</b> pairs that are hostile in both directions and measured the time between the first attack and the first answer. This is one of them:</p>
+  </div>
+  <figure class="wide reveal" id="timeline-fig"></figure>
+  <figure class="wide reveal" id="lag-fig">
+    <figcaption class="fig-title">Time between the first attack and the first answer, for all pairs</figcaption>
     <div class="chart" id="lags"></div>
-    <figcaption><b>Figure 11.</b> Time between the first hostile link and the first hostile link in the other direction, for all pairs.</figcaption>
   </figure>
   <div class="prose">
-    <p>Only <span data-k="lags.within30" data-f="pct0">–</span> of the answers arrive in the first month, and half of the pairs take more than <span data-k="lags.median" data-f="int">–</span> days. This does not look like a reaction to one attack. It looks more like two communities that do not like each other for a long time.</p>
-    <p>We also checked if the conflict gets worse with time. For each hostile pair we split its links in two halves, the early ones and the late ones, and compared the share of hostile links.</p>
+    <p class="reveal">Only <b data-k="lags.within30" data-f="pct0">–</b> of the answers arrive in the first month, and half of the pairs take more than <b data-k="lags.median" data-f="int">–</b> days. This does not look like a reaction to one attack. It looks more like two communities that do not like each other for a long time.</p>
+    <p class="reveal">We also checked if the conflict gets worse with time. For each hostile pair we split its links in two halves, the early ones and the late ones, and compared the share of hostile links.</p>
   </div>
-  <figure class="narrow">
-    <div id="esc-fig"></div>
-    <figcaption><b>Figure 12.</b> Share of hostile links in the first and second half of each pair's activity.</figcaption>
-  </figure>
+  <figure class="reveal narrow" id="esc-fig"></figure>
   <div class="prose">
-    <p>The two values are almost the same. Once two communities are hostile, the level of hostility stays stable.</p>
+    <p class="reveal callout-line">The two values are almost the same. Once two communities are hostile, the level of hostility stays stable.</p>
   </div>
 </section>
 
-<section id="end" class="prose">
-  <h2>Summary</h2>
-  <ol class="summary">
-    <li>Attacked communities do not clearly answer with hostility. There is a small effect, but it disappears when we remove hub subreddits.</li>
-    <li>Closeness matters. Communities that share users answer with less hostility, but only if they interact a lot. This is our most solid result.</li>
-    <li>Hostile pairs form groups. There are about twice as many triangles as expected, and the pairs inside them are more distant than the pairs that are alone.</li>
-    <li>Answers take months, and conflicts do not become more hostile with time.</li>
-  </ol>
+<section id="end" class="chapter">
+  <div class="chapter-head reveal">
+    <p class="kicker">Summary</p>
+    <h2>What we found</h2>
+  </div>
+  <div class="takeaways">
+    <article class="reveal"><span class="t-num">1</span><h3>Attacks are not clearly answered</h3><p>Attacked communities answer with hostility a bit more than expected, but the effect disappears when we remove hub subreddits.</p></article>
+    <article class="reveal"><span class="t-num">2</span><h3>Closeness matters</h3><p>Communities that share users answer with less hostility, but only if they interact a lot. This is our most solid result.</p></article>
+    <article class="reveal"><span class="t-num">3</span><h3>Hostile pairs form groups</h3><p>There are about twice as many triangles as expected, and the pairs inside them are more distant than the pairs that are alone.</p></article>
+    <article class="reveal"><span class="t-num">4</span><h3>It takes months</h3><p>Answers take months, not days, and conflicts do not become more hostile with time.</p></article>
+  </div>
 
-  <h2>Methods</h2>
-  <dl class="methods">
-    <dt>Hostile link</dt><dd>The label given by SNAP (link_sentiment = &minus;1). Dataset from Kumar et al., <i>Community Interaction and Conflict on the Web</i>, WWW 2018.</dd>
-    <dt>Expected by chance</dt><dd>For an attack from A to B, the probability that B sends at least one hostile link back is 1 &minus; (1 &minus; p)<sup>n</sup>. Here p is the share of hostile links among all the links B sends, and n is the number of links B sent back to A.</dd>
-    <dt>Hubs</dt><dd>Subreddits that link to at least 100 others and send at least five times more links than they receive.</dd>
-    <dt>Closeness</dt><dd>Cosine similarity between the SNAP embeddings of the two subreddits. The embeddings are built from the users that post in each community, not from the links.</dd>
-    <dt>Regression</dt><dd>Logistic regression of "B sent a hostile link back" on log(links back), closeness and their interaction. The interaction is <span data-k="model.all.coef" data-f="coef">–</span> with all pairs and <span data-k="model.clean.coef" data-f="coef">–</span> without hubs (p &lt; 0.001 in both).</dd>
-    <dt>Triangles</dt><dd>A hostile pair has at least 3 hostile links (<span data-k="triangles.edges" data-f="int">–</span> pairs). The random networks come from a configuration model that keeps the degree of each subreddit.</dd>
-    <dt>Early vs. late</dt><dd>Links of each hostile pair split at the median date. Wilcoxon signed-rank test, p = <span data-k="escalation.p" data-f="p">–</span>.</dd>
-  </dl>
-  <p class="limits">Limits: the SNAP label is based on the tone of the post, not on the intention. For small subreddits the share of hostile links is noisy. The part about answers uses pairs with at least one hostile link, and the part about triangles uses pairs with at least three, so they are not the same set of pairs. All of this is observational, so we cannot say that closeness causes less hostility.</p>
+  <div class="prose">
+    <details class="methods reveal">
+      <summary>Methods and limits</summary>
+      <dl>
+        <dt>Hostile link</dt><dd>The label given by SNAP (link_sentiment = &minus;1). Dataset from Kumar et al., <i>Community Interaction and Conflict on the Web</i>, WWW 2018.</dd>
+        <dt>Expected by chance</dt><dd>For an attack from A to B, the probability that B sends at least one hostile link back is 1 &minus; (1 &minus; p)<sup>n</sup>. Here p is the share of hostile links among all the links B sends, and n is the number of links B sent back to A.</dd>
+        <dt>Hubs</dt><dd>Subreddits that link to at least 100 others and send at least five times more links than they receive.</dd>
+        <dt>Closeness</dt><dd>Cosine similarity between the SNAP embeddings of the two subreddits. The embeddings are built from the users that post in each community, not from the links.</dd>
+        <dt>Regression</dt><dd>Logistic regression of "B sent a hostile link back" on log(links back), closeness and their interaction. The interaction is <span data-k="model.all.coef" data-f="coef">–</span> with all pairs and <span data-k="model.clean.coef" data-f="coef">–</span> without hubs (p &lt; 0.001 in both).</dd>
+        <dt>Triangles</dt><dd>A hostile pair has at least 3 hostile links (<span data-k="triangles.edges" data-f="int">–</span> pairs). The random networks come from a configuration model that keeps the degree of each subreddit.</dd>
+        <dt>Early vs. late</dt><dd>Links of each hostile pair split at the median date. Wilcoxon signed-rank test, p = <span data-k="escalation.p" data-f="p">–</span>.</dd>
+      </dl>
+      <p>Limits: the SNAP label is based on the tone of the post, not on the intention. For small subreddits the share of hostile links is noisy. The part about answers uses pairs with at least one hostile link, and the part about triangles uses pairs with at least three, so they are not the same set of pairs. All of this is observational, so we cannot say that closeness causes less hostility.</p>
+    </details>
+  </div>
 </section>
 
 </main>
@@ -184,7 +210,7 @@
   <p>CS-401 Applied Data Analysis, EPFL, 2026. Data: Stanford SNAP Reddit Hyperlink Network.</p>
 </footer>
 
-<script src="data.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="data.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
