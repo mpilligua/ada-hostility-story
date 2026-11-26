@@ -122,11 +122,10 @@
   function onScroll() {
     const h = document.documentElement.scrollHeight - window.innerHeight;
     bar.style.transform = `scaleX(${h > 0 ? window.scrollY / h : 0})`;
-    nav.classList.toggle('on', window.scrollY > window.innerHeight * 0.75);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
-  if ('IntersectionObserver' in window) {
+  if (nav && 'IntersectionObserver' in window) {
     const links = [...nav.querySelectorAll('a')];
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
@@ -210,12 +209,12 @@
           ctx.stroke();
           ctx.fillStyle = '#ff7a55'; ctx.beginPath(); ctx.arc(q[0], q[1], 4.5, 0, 6.283); ctx.fill();
           const label = 'r/' + pts[best].id;
-          ctx.font = '600 13px "IBM Plex Mono", monospace';
+          ctx.font = '600 14px "IBM Plex Sans", sans-serif';
           const w = ctx.measureText(label).width;
           const lx = Math.min(q[0] + 12, W - w - 16), ly = q[1] - 14;
           ctx.fillStyle = 'rgba(12,16,24,0.85)'; ctx.fillRect(lx - 6, ly - 15, w + 12, 36);
           ctx.fillStyle = '#ffffff'; ctx.fillText(label, lx, ly);
-          ctx.font = '400 11px "IBM Plex Mono", monospace'; ctx.fillStyle = '#8a93a6';
+          ctx.font = '400 11px "IBM Plex Sans", sans-serif'; ctx.fillStyle = '#8a93a6';
           ctx.fillText(pts[best].d + ' hostile pairs in total', lx, ly + 15);
         }
       }
@@ -529,7 +528,7 @@
   });
 
   mount('net-examples', (el, W) => {
-    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'Two real examples from the data';
+    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'A hostile pair that is alone, and a triangle where all three communities are hostile to each other. Both are real.';
     el.appendChild(title);
     const H = 360;
     const svg = svgIn(el, W, H);
@@ -553,7 +552,7 @@
   });
 
   mount('clique-prox', (el, W) => {
-    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'Closeness of the two communities';
+    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'Average closeness of the two communities, for pairs that are alone and pairs inside a triangle.';
     el.appendChild(title);
     const H = 250, C = D.clique_prox, vmax = 0.7, bw = W - 64;
     const svg = svgIn(el, W, H);
@@ -659,7 +658,7 @@
   });
 
   mount('esc-fig', (el, W) => {
-    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'Share of hostile links, early and late';
+    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'Share of hostile links in the first and second half of each hostile pair.';
     el.appendChild(title);
     const H = 250, E2 = D.escalation, t = 30, b = 54, ymax = 0.5;
     const svg = svgIn(el, W, H);

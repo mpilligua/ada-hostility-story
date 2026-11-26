@@ -7,37 +7,21 @@
 <meta name="description" content="What happens after one subreddit attacks another. A study of 858,488 links between Reddit communities.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css?v=5">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
 
 <div class="progress" aria-hidden="true"><div class="progress-bar"></div></div>
 
-<nav class="chapters" aria-label="Sections">
-  <a href="#hook" data-label="An example"></a>
-  <a href="#ch1" data-label="Do attacks get answered?"></a>
-  <a href="#ch2" data-label="Closeness"></a>
-  <a href="#ch3" data-label="Groups"></a>
-  <a href="#ch4" data-label="Time"></a>
-  <a href="#end" data-label="Summary"></a>
-</nav>
-
 <header class="hero">
   <canvas id="net" aria-label="Network of subreddits connected by hostile links"></canvas>
   <div class="hero-inner">
-    <p class="kicker">Applied Data Analysis &middot; EPFL &middot; Group 21</p>
     <h1>Bad <span class="hot-text">Blood</span></h1>
-    <p class="dek">What happens after one subreddit attacks another? We looked at <b data-k="totals.links" data-f="int">858,488</b> links between Reddit communities to see who answers, when, and why.</p>
-    <div class="hero-stats">
-      <div><span data-k="totals.links" data-f="int">–</span><small>links between subreddits</small></div>
-      <div><span data-k="totals.negative_links" data-f="int">–</span><small>of them hostile</small></div>
-      <div><span>3.3</span><small>years of Reddit</small></div>
-    </div>
+    <p class="dek">What happens after one subreddit attacks another? We looked at 858,488 links between Reddit communities, 82,210 of them hostile, to see who answers, when, and why.</p>
     <p class="hero-hint">Each dot is a subreddit. Red lines belong to groups of three communities that are all hostile to each other.<span class="desk-only"> Move over a dot to see its name.</span></p>
   </div>
-  <a class="scroll-cue" href="#intro" aria-label="Start reading"><span></span></a>
 </header>
 
 <main>
@@ -46,16 +30,14 @@
   <p class="lead reveal">On Reddit, communities talk about each other all the time. A post in one subreddit links to a post in another, and sometimes that link is an attack: people mock the other community, call it out or try to start a fight.</p>
   <p class="reveal">We used the Stanford SNAP dataset, which covers January 2014 to April 2017. Each link has a label that says if it is hostile or not. About <b data-k="totals.neg_share" data-f="pct0">–</b> of them are, and some pairs of communities keep doing this for years.</p>
   <figure class="feuds reveal">
-    <figcaption class="fig-title">The ten pairs with the most hostile links</figcaption>
     <ol id="feuds"></ol>
-    <p class="fig-note">Number of hostile links between the two communities, in both directions.</p>
+    <figcaption>The ten pairs with the most hostile links between them, counting both directions.</figcaption>
   </figure>
   <p class="reveal">In this part of the project we ask what happens after an attack. Does the other community answer? Does it depend on who they are? And how long does it take?</p>
 </section>
 
 <section id="hook" class="chapter">
   <div class="chapter-head reveal">
-    <p class="kicker">An example</p>
     <h2>r/tomorrow and r/nintendoswitch</h2>
   </div>
   <div class="hook-grid">
@@ -71,7 +53,6 @@
 
 <section id="ch1" class="chapter">
   <div class="chapter-head reveal">
-    <p class="kicker">Part 1</p>
     <h2>Do attacks get answered?</h2>
   </div>
   <div class="prose">
@@ -85,6 +66,7 @@
     </div>
     <div class="chart" id="bars"></div>
     <div class="legend"><span><i class="sw hot"></i>Pairs with a hostile answer</span><span><i class="sw neutral"></i>Expected by chance</span></div>
+    <figcaption>Share of attacked communities that sent at least one hostile link back, in three groups by how many links they sent back.</figcaption>
   </figure>
   <div class="prose">
     <p class="reveal">With all subreddits, attacked communities answer with hostility a bit more than expected. But some subreddits, like r/subredditdrama, exist mainly to comment on other communities, and they are in a lot of these pairs. We call them hubs. If we remove them (the second button), the difference becomes too small to separate from noise.</p>
@@ -94,12 +76,11 @@
 
 <section id="ch2" class="chapter">
   <div class="chapter-head reveal">
-    <p class="kicker">Part 2</p>
     <h2>It depends on how close the two communities are</h2>
   </div>
   <div class="scrolly">
     <div class="scrolly-graphic"><div class="chart" id="lines"></div>
-      <div class="legend"><span><i class="sw hot"></i>Distant pairs</span><span><i class="sw neutral"></i>Average</span><span><i class="sw calm"></i>Close pairs</span></div>
+      <p class="figcap">Share of pairs where the attacked community answered with a hostile link, by amount of contact and closeness. Hubs are excluded.</p>
     </div>
     <div class="scrolly-steps">
       <div class="step" data-step="0"><p>Two subreddits are close if many of the same users post in both. We used this to split the pairs in three groups: distant, average and close.</p></div>
@@ -112,9 +93,8 @@
     <p class="reveal">To check that this is not a coincidence, we shuffled the closeness values between pairs, so that they no longer mean anything, and measured the effect again. We did this <b data-k="permutation.n_draws" data-f="int">–</b> times.</p>
   </div>
   <figure class="wide reveal" id="perm-fig">
-    <figcaption class="fig-title">Size of the effect with shuffled closeness, and in the real data</figcaption>
     <div class="chart" id="perm"></div>
-    <p class="fig-note">The effect is the interaction between contact and closeness in a logistic regression, without hubs. More to the left means that closeness matters more when there is more contact.</p>
+    <figcaption>Size of the effect with shuffled closeness (grey) and in the real data (red). The effect is the interaction between contact and closeness in a logistic regression, without hubs. More to the left means that closeness matters more when there is more contact.</figcaption>
   </figure>
   <div class="prose">
     <p class="reveal callout-line" id="perm-sentence"></p>
@@ -123,7 +103,6 @@
 
 <section id="ch3" class="chapter">
   <div class="chapter-head reveal">
-    <p class="kicker">Part 3</p>
     <h2>Hostile pairs form groups</h2>
   </div>
   <div class="prose">
@@ -131,16 +110,11 @@
     <p class="reveal">To answer this we counted triangles: groups of three subreddits where every pair is hostile. Then we built 500 random networks in which each subreddit keeps the same number of hostile pairs but with random partners, and counted the triangles there.</p>
   </div>
   <figure class="wide reveal" id="tri-fig">
-    <div class="tri-numbers">
-      <div class="tri-num hot-text"><span data-count="triangles.observed">0</span><small>triangles in the real network</small></div>
-      <div class="tri-num muted-text"><span data-count="triangles.null_mean">0</span><small>in a random network, on average</small></div>
-      <div class="tri-badge"><span data-k="derived.tri_ratio" data-f="x1">–</span><small>more than expected</small></div>
-    </div>
     <div class="chart" id="tri-strip"></div>
-    <p class="fig-note">Each grey dot is one of the 500 random networks.</p>
+    <figcaption>Number of triangles in each of the 500 random networks (grey dots) and in the real network (red).</figcaption>
   </figure>
   <div class="prose">
-    <p class="reveal">The real network has about twice as many triangles as the random ones. Without hubs the difference is bigger (<b data-k="derived.tri_ratio_clean" data-f="x1">–</b>).</p>
+    <p class="reveal">The real network has <b data-k="triangles.observed" data-f="int">–</b> triangles, and the random ones have <b data-k="triangles.null_mean" data-f="int">–</b> on average, so about twice as many. Without hubs the difference is bigger (<b data-k="derived.tri_ratio_clean" data-f="x1">–</b>).</p>
     <p class="reveal">We expected these groups to be made of similar communities that share users. We found the opposite.</p>
   </div>
   <div class="duo">
@@ -154,7 +128,6 @@
 
 <section id="ch4" class="chapter">
   <div class="chapter-head reveal">
-    <p class="kicker">Part 4</p>
     <h2>It takes months, and it does not get worse</h2>
   </div>
   <div class="prose">
@@ -162,8 +135,8 @@
   </div>
   <figure class="wide reveal" id="timeline-fig"></figure>
   <figure class="wide reveal" id="lag-fig">
-    <figcaption class="fig-title">Time between the first attack and the first answer, for all pairs</figcaption>
     <div class="chart" id="lags"></div>
+    <figcaption>Time between the first attack and the first answer, for all pairs that are hostile in both directions.</figcaption>
   </figure>
   <div class="prose">
     <p class="reveal">Only <b data-k="lags.within30" data-f="pct0">–</b> of the answers arrive in the first month, and half of the pairs take more than <b data-k="lags.median" data-f="int">–</b> days. This does not look like a reaction to one attack. It looks more like two communities that do not like each other for a long time.</p>
@@ -177,14 +150,15 @@
 
 <section id="end" class="chapter">
   <div class="chapter-head reveal">
-    <p class="kicker">Summary</p>
-    <h2>What we found</h2>
+    <h2>Summary</h2>
   </div>
-  <div class="takeaways">
-    <article class="reveal"><span class="t-num">1</span><h3>Attacks are not clearly answered</h3><p>Attacked communities answer with hostility a bit more than expected, but the effect disappears when we remove hub subreddits.</p></article>
-    <article class="reveal"><span class="t-num">2</span><h3>Closeness matters</h3><p>Communities that share users answer with less hostility, but only if they interact a lot. This is our most solid result.</p></article>
-    <article class="reveal"><span class="t-num">3</span><h3>Hostile pairs form groups</h3><p>There are about twice as many triangles as expected, and the pairs inside them are more distant than the pairs that are alone.</p></article>
-    <article class="reveal"><span class="t-num">4</span><h3>It takes months</h3><p>Answers take months, not days, and conflicts do not become more hostile with time.</p></article>
+  <div class="prose">
+    <ol class="summary reveal">
+      <li><b>Attacks are not clearly answered.</b> Attacked communities answer with hostility a bit more than expected, but the effect disappears when we remove hub subreddits.</li>
+      <li><b>Closeness matters.</b> Communities that share users answer with less hostility, but only if they interact a lot. This is our most solid result.</li>
+      <li><b>Hostile pairs form groups.</b> There are about twice as many triangles as expected, and the pairs inside them are more distant than the pairs that are alone.</li>
+      <li><b>It takes months.</b> Answers take months, not days, and conflicts do not become more hostile with time.</li>
+    </ol>
   </div>
 
   <div class="prose">
@@ -210,7 +184,7 @@
   <p>CS-401 Applied Data Analysis, EPFL, 2026. Data: Stanford SNAP Reddit Hyperlink Network.</p>
 </footer>
 
-<script src="data.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="data.js?v=5"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
