@@ -6,11 +6,19 @@
   const NS = 'http://www.w3.org/2000/svg';
   const last = (a) => a[a.length - 1];
 
+  const PE = D.pair_example, sum = (a) => a.reduce((x, y) => x + y, 0);
+  D.examples_net.triangle = D.triangle_example.nodes;
   D.derived = {
     tri_ratio: D.triangles.observed / D.triangles.null_mean,
     tri_ratio_clean: D.triangles.clean_observed / D.triangles.clean_null_mean,
     dist_end: last(D.prox_lines.distant).rate,
     close_end: last(D.prox_lines.close).rate,
+    pair_total: PE.seq_ab.length + PE.seq_ba.length,
+    pair_share_a: sum(PE.seq_ab) / PE.seq_ab.length,
+    pair_share_b: sum(PE.seq_ba) / PE.seq_ba.length,
+    pair_ratio_a: sum(PE.seq_ab) / PE.seq_ab.length / PE.base_a,
+    in_tri_share: D.nested.in_tri / D.nested.pairs,
+    in_tri_null_share: D.nested.in_tri_null / D.nested.pairs,
   };
 
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -248,58 +256,54 @@
     }, 0.2);
   })();
 
-  // ---------- hook: one attack, six replies ----------
-  mount('hook-fig', (el, W) => {
-    const H = 330 + 34, ex = D.example;
-    const svg = svgIn(el, W, H);
-    const defs = s('defs', {}, svg);
-    const mk = s('marker', { id: 'arrow-hot', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs);
-    s('path', { d: 'M0,0 L10,5 L0,10 z', class: 'f-hot' }, mk);
-
-    const inset = Math.min(70, W * 0.17);
-    const A = [inset, 150], B = [W - inset, 150], cTop = [W / 2, 88], cBot = [W / 2, 332];
-    const attack = s('path', { d: `M${A[0] + 24},${A[1] - 4} Q${cTop[0]},${cTop[1]} ${B[0] - 26},${B[1] - 4}`, fill: 'none', class: 's-hot', 'stroke-width': 2.5, 'marker-end': 'url(#arrow-hot)' }, svg);
-    const attackLbl = txt(svg, W / 2, 104, 'the attack', 't-hot', { 'text-anchor': 'middle' });
-    const P0 = [B[0] - 12, A[1] + 26], P1 = [A[0] + 12, A[1] + 26];
-    s('path', { d: `M${P0[0]},${P0[1]} Q${cBot[0]},${cBot[1]} ${P1[0]},${P1[1]}`, fill: 'none', class: 's-neutral', 'stroke-width': 1.5, 'stroke-dasharray': '3 6' }, svg);
-    const backLbl = txt(svg, W / 2, H - 4, `${ex.n_back} links back (by chance: ${fmt.pct0(ex.expected)} for one hostile)`, 't-muted', { 'text-anchor': 'middle', 'font-size': W < 420 ? 10.5 : 12 });
-
-    [[A, 'r/' + ex.a], [B, 'r/' + ex.b]].forEach(([p, name]) => {
-      s('circle', { cx: p[0], cy: p[1], r: 20, class: 'f-ink' }, svg);
-      const anchor = p === A ? 'start' : 'end';
-      txt(svg, p === A ? Math.max(0, p[0] - 40) : Math.min(W, p[0] + 40), 70, name, 't-strong', { 'text-anchor': anchor });
-      s('line', { x1: p[0], x2: p[0], y1: 80, y2: p[1] - 24, class: 's-rule' }, svg);
+  // ---------- real posts ----------
+  function quoteCards(el, quotes, about) {
+    quotes.forEach((q) => {
+      const card = document.createElement('a');
+      card.className = 'quote';
+      card.href = q.url; card.target = '_blank'; card.rel = 'noopener';
+      const who = document.createElement('span'); who.className = 'quote-who';
+      who.textContent = about ? `r/${q.source} about r/${q.target}` : `r/${q.source} to r/${q.target}`;
+      const t = document.createElement('span'); t.className = 'quote-text'; t.textContent = q.title;
+      const d = document.createElement('span'); d.className = 'quote-date'; d.textContent = niceDate(q.date);
+      card.append(who, t, d);
+      el.appendChild(card);
     });
+  }
+  quoteCards(document.getElementById('pair-quotes'), D.pair_example.quotes, true);
+  quoteCards(document.getElementById('tri-example'), D.triangle_example.quotes, true);
 
-    const quad = (t) => [(1 - t) ** 2 * P0[0] + 2 * (1 - t) * t * cBot[0] + t * t * P1[0], (1 - t) ** 2 * P0[1] + 2 * (1 - t) * t * cBot[1] + t * t * P1[1]];
-    const dots = [];
-    for (let i = 0; i < ex.n_back; i++) {
-      const [x, y] = quad(0.2 + (0.6 * i) / (ex.n_back - 1));
-      const c = s('circle', { cx: x, cy: y, r: 9, class: 'pop f-card s-neutral', 'stroke-width': 2 }, svg);
-      c.style.transform = 'scale(0)';
-      dots.push(c);
-    }
-    const big = txt(svg, W / 2, 186, `${ex.neg_back} of ${ex.n_back}`, 't-hot t-display', { 'text-anchor': 'middle', 'font-size': 40, 'font-weight': 800, opacity: 0 });
-    const small1 = txt(svg, W / 2, 206, 'were hostile', 't-strong', { 'text-anchor': 'middle', opacity: 0 });
-    const small2 = s('g', {}, svg);
-    [attackLbl, backLbl].forEach((t) => t.setAttribute('opacity', 0));
-
-    const len = attack.getTotalLength();
-    attack.style.strokeDasharray = len; attack.style.strokeDashoffset = len;
-
-    function final() {
-      attack.style.strokeDashoffset = 0;
-      [attackLbl, backLbl, big, small1, small2].forEach((t) => t.setAttribute('opacity', 1));
-      dots.forEach((d, i) => { d.style.transform = 'scale(1)'; if (i < ex.neg_back) d.setAttribute('class', 'pop f-hot'); });
-    }
+  // ---------- the example pair: every link in both directions, in time order ----------
+  mount('hook-fig', (el, W) => {
+    const P = D.pair_example, size = W < 500 ? 10 : 12, gap = 3, step = size + gap;
+    const cols = Math.max(10, Math.floor(W / step));
+    const rowsOf = (n) => Math.ceil(n / cols);
+    const blocks = [
+      { seq: P.seq_ab, label: `r/${P.a} to r/${P.b}`, usual: P.base_a },
+      { seq: P.seq_ba, label: `r/${P.b} to r/${P.a}`, usual: P.base_b },
+    ];
+    let y = 0; const lay = [];
+    blocks.forEach((bk) => { lay.push({ ...bk, y0: y + 22 }); y += 22 + rowsOf(bk.seq.length) * step + 46; });
+    const H = y;
+    const svg = svgIn(el, W, H);
+    const cells = [];
+    lay.forEach((bk) => {
+      const k = bk.seq.reduce((x, v) => x + v, 0);
+      txt(svg, 0, bk.y0 - 8, bk.label, 't-strong', { 'font-size': 14 });
+      bk.seq.forEach((v, i) => {
+        const c = s('rect', { x: (i % cols) * step, y: bk.y0 + Math.floor(i / cols) * step, width: size, height: size, rx: 2, class: 'f-neutral pop' }, svg);
+        c.style.transform = 'scale(0)';
+        cells.push({ c, hot: v === 1 });
+      });
+      const yb = bk.y0 + rowsOf(bk.seq.length) * step + 16;
+      txt(svg, 0, yb, `${bk.seq.length} links, ${k} hostile. If it behaved as usual: about ${Math.round(bk.seq.length * bk.usual)} hostile.`, 't-muted', { 'font-size': 13 });
+    });
+    function final() { cells.forEach(({ c, hot }) => { c.style.transform = 'scale(1)'; if (hot) c.setAttribute('class', 'f-hot pop'); }); }
     function play() {
       if (reduce) { final(); return; }
-      tween(1100, (p) => { attack.style.strokeDashoffset = len * (1 - p); }, () => attackLbl.setAttribute('opacity', 1));
-      setTimeout(() => backLbl.setAttribute('opacity', 1), 1200);
-      dots.forEach((d, i) => setTimeout(() => { d.style.transform = 'scale(1)'; }, 1400 + i * 230));
-      const t2 = 1400 + ex.n_back * 230 + 300;
-      dots.forEach((d, i) => { if (i < ex.neg_back) setTimeout(() => d.setAttribute('class', 'pop f-hot'), t2 + i * 180); });
-      setTimeout(() => [big, small1, small2].forEach((t) => t.setAttribute('opacity', 1)), t2 + ex.neg_back * 180 + 200);
+      cells.forEach(({ c }, i) => setTimeout(() => { c.style.transform = 'scale(1)'; }, i * 8));
+      const t0 = cells.length * 8 + 250;
+      cells.filter((x) => x.hot).forEach(({ c }, i) => setTimeout(() => c.setAttribute('class', 'f-hot pop'), t0 + i * 90));
     }
     return { play, final };
   });
@@ -527,6 +531,42 @@
     return { play, final };
   });
 
+  mount('nested-fig', (el, W) => {
+    const N = D.nested, wide = W >= 560;
+    const R = wide ? 150 : Math.min(130, W / 2 - 10);
+    const rIn = R * Math.sqrt(N.in_tri / N.pairs), rNull = R * Math.sqrt(N.in_tri_null / N.pairs);
+    const cx = wide ? R + 10 : W / 2, base = 2 * R + 14;
+    const H = wide ? base + 10 : base + 100;
+    const svg = svgIn(el, W, H);
+    const outer = s('circle', { cx, cy: base - R, r: R, class: 'f-neutral', opacity: 0.28 }, svg);
+    const inner = s('circle', { cx, cy: base - rIn, r: rIn, class: 'f-hot', opacity: 0.9 }, svg);
+    const ghost = s('circle', { cx, cy: base - rNull, r: rNull, fill: 'none', class: 's-ink', 'stroke-width': 1.5, 'stroke-dasharray': '5 4', opacity: 0 }, svg);
+    ghost.style.transition = 'opacity .6s';
+    const pct = (n) => fmt.pct0(n / N.pairs);
+    const items = [
+      [base - 2 * R + 8, 't-strong', `All hostile pairs: ${fmt.int(N.pairs)}`],
+      [base - 2 * rIn + 18, 't-hot', `In at least one triangle: ${fmt.int(N.in_tri)} (${pct(N.in_tri)})`],
+      [base - 2 * rNull + 4, 't-muted', `Expected with random networks: ${fmt.int(N.in_tri_null)} (${pct(N.in_tri_null)})`],
+    ];
+    const labels = s('g', { opacity: 0 }, svg);
+    labels.style.transition = 'opacity .6s';
+    items.forEach(([yy, cls, str], i) => {
+      if (wide) {
+        const x0 = cx + Math.sqrt(Math.max(0, [R, rIn, rNull][i] ** 2 - (yy - (base - [R, rIn, rNull][i])) ** 2));
+        s('line', { x1: x0 + 4, x2: 2 * R + 40, y1: yy, y2: yy, class: 's-ink', 'stroke-width': 0.8 }, labels);
+        txt(labels, 2 * R + 48, yy + 4, str, cls, { 'font-size': 14 });
+      } else {
+        txt(labels, 0, base + 30 + i * 24, str, cls, { 'font-size': 13.5 });
+      }
+    });
+    function setR(p) { outer.setAttribute('r', R * p); outer.setAttribute('cy', base - R * p); inner.setAttribute('r', rIn * p); inner.setAttribute('cy', base - rIn * p); }
+    setR(0);
+    return {
+      play: () => tween(1200, setR, () => { ghost.setAttribute('opacity', 1); labels.setAttribute('opacity', 1); }),
+      final: () => { setR(1); ghost.setAttribute('opacity', 1); labels.setAttribute('opacity', 1); },
+    };
+  });
+
   mount('net-examples', (el, W) => {
     const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'A hostile pair that is alone, and a triangle where all three communities are hostile to each other. Both are real.';
     el.appendChild(title);
@@ -582,7 +622,8 @@
 
   // ---------- chapter 4: time ----------
   mount('timeline-fig', (el, W) => {
-    const H = 190, x0 = 18, x1 = W - 18, y = 104, L = D.lag_example;
+    const H = 190, x0 = 18, x1 = W - 18, y = 104, T = D.timeline_example;
+    const L = { first: T.attack.source, second: T.attack.target, t1: T.attack.date, t2: T.answer.date, days: T.days };
     const svg = svgIn(el, W, H);
     s('line', { x1: x0, x2: x1, y1: y, y2: y, class: 's-rule', 'stroke-width': 2 }, svg);
     const t1 = new Date(L.t1), t2 = new Date(L.t2);
@@ -596,7 +637,7 @@
     }
     const prog = s('line', { x1: x0, x2: x0, y1: y, y2: y, class: 's-hot', 'stroke-width': 3 }, svg);
     s('circle', { cx: x0, cy: y, r: 8, class: 'f-hot' }, svg);
-    const lA = txt(svg, x0, 28, '', 't-strong', { 'font-size': 13 });
+    const lA = txt(svg, x0, 28, '', 't-strong', { 'font-size': W < 520 ? 11.5 : 13 });
     [[`r/${L.first} attacks r/${L.second}`], [niceDate(L.t1)]].forEach(([line], j) => { const ts = s('tspan', { x: x0, dy: j ? 17 : 0, class: j ? 't-muted' : '' }, lA); ts.textContent = line; });
     const endDot = s('circle', { cx: x1, cy: y, r: 8, class: 'f-hot pop' }, svg);
     endDot.style.transform = 'scale(0)';
@@ -610,6 +651,9 @@
       counter.textContent = `${Math.round(L.days * p)} days`;
     }
     function final() { at(1); endDot.style.transform = 'scale(1)'; lB.setAttribute('opacity', 1); }
+    const qs = document.createElement('div'); qs.className = 'quotes two';
+    el.appendChild(qs);
+    quoteCards(qs, [T.attack, T.answer], false);
     return { play: () => tween(2600, at, () => { endDot.style.transform = 'scale(1)'; lB.setAttribute('opacity', 1); }), final };
   });
 

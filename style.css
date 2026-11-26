@@ -204,3 +204,14 @@ svg .s-neutral { stroke: var(--neutral); } svg .s-ink { stroke: var(--ink-2); }
 
 .summary { padding-left: 1.2em; margin: 0 0 2em; }
 .summary li { margin-bottom: .7em; padding-left: .2em; }
+
+/* real post titles */
+.quotes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 36px; margin: 34px auto 40px; }
+.tri-example { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.quotes.two { margin: 26px 0 0; }
+.quote { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; border-top: 1px solid var(--rule); padding-top: 14px; }
+.quote-who { font-family: var(--f-sans); font-size: 13.5px; color: var(--hot-ink); font-weight: 500; }
+.quote-text { font-size: 19px; line-height: 1.4; }
+.quote-date { font-family: var(--f-sans); font-size: 13px; color: var(--muted); }
+.quote:hover .quote-text, .quote:focus-visible .quote-text { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+@media (max-width: 760px) { .quotes, .tri-example { grid-template-columns: 1fr; gap: 20px; } }
