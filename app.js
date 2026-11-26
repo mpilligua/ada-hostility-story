@@ -106,133 +106,75 @@
   let rt;
   window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => resizers.forEach((r) => r()), 180); });
 
-  // ---------- reveal, progress, chapter dots ----------
-  const reveals = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window && !reduce) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-    reveals.forEach((r) => io.observe(r));
-  } else {
-    reveals.forEach((r) => r.classList.add('in'));
-  }
-
-  const bar = document.querySelector('.progress-bar');
-  const nav = document.querySelector('.chapters');
-  function onScroll() {
-    const h = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.transform = `scaleX(${h > 0 ? window.scrollY / h : 0})`;
-    nav.classList.toggle('on', window.scrollY > window.innerHeight * 0.75);
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-  if ('IntersectionObserver' in window) {
-    const links = [...nav.querySelectorAll('a')];
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
-      });
-    }, { rootMargin: '-45% 0px -50% 0px' });
-    links.forEach((a) => { const t = document.querySelector(a.getAttribute('href')); if (t) io.observe(t); });
-  }
-
-  // ---------- hero: the real feud network ----------
-  (function hero() {
+  // ---------- figure 1: sample of the hostile network ----------
+  (function network() {
     const cv = document.getElementById('net');
+    if (!cv) return;
     const ctx = cv.getContext('2d');
     const N = D.hero.nodes, E = D.hero.edges;
-    const rand = rng(7);
-    const phase = N.map(() => ({ a: rand() * 6.283, b: rand() * 6.283, r: 3 + rand() * 7 }));
-    const hot = E.filter((e) => e[2] === 1);
-    const pulses = [];
-    let W = 0, H = 0, pts = [], mouse = null, running = true, raf = 0;
+    let W = 0, H = 0, pts = [], mouse = null, col = {};
 
     function layout() {
+      const cs = getComputedStyle(document.documentElement);
+      ['ink', 'ink-2', 'hot', 'neutral', 'paper', 'rule', 'muted'].forEach((k) => { col[k] = cs.getPropertyValue('--' + k).trim(); });
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       W = cv.clientWidth; H = cv.clientHeight;
       cv.width = W * dpr; cv.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const wide = W > 860;
-      const x0 = wide ? W * 0.38 : W * 0.04, x1 = W * 0.97;
-      const y0 = H * (wide ? 0.1 : 0.06), y1 = H * (wide ? 0.9 : 0.94);
-      pts = N.map((n) => ({ x: x0 + n.x * (x1 - x0), y: y0 + n.y * (y1 - y0), d: n.d, id: n.id }));
+      const pad = 14;
+      pts = N.map((n) => ({ x: pad + n.x * (W - 2 * pad), y: pad + n.y * (H - 2 * pad), d: n.d, id: n.id }));
+      draw();
     }
-    function position(i, t) {
-      const p = pts[i], ph = phase[i];
-      if (reduce) return [p.x, p.y];
-      return [p.x + Math.cos(t * 0.00035 + ph.a) * ph.r, p.y + Math.sin(t * 0.00042 + ph.b) * ph.r];
+    function strokeEdges(filter, color, alpha, width) {
+      ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = width;
+      ctx.beginPath();
+      E.forEach((e) => { if (filter(e)) { ctx.moveTo(pts[e[0]].x, pts[e[0]].y); ctx.lineTo(pts[e[1]].x, pts[e[1]].y); } });
+      ctx.stroke();
+      ctx.globalAlpha = 1;
     }
-    function frame(t) {
+    function draw() {
       ctx.clearRect(0, 0, W, H);
-      const P = pts.map((_, i) => position(i, t || 0));
-      ctx.lineWidth = 0.7;
-      ctx.strokeStyle = 'rgba(138,152,178,0.16)';
-      ctx.beginPath();
-      for (const [a, b, h] of E) { if (h) continue; ctx.moveTo(P[a][0], P[a][1]); ctx.lineTo(P[b][0], P[b][1]); }
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,84,40,0.22)';
-      ctx.beginPath();
-      for (const [a, b, h] of E) { if (!h) continue; ctx.moveTo(P[a][0], P[a][1]); ctx.lineTo(P[b][0], P[b][1]); }
-      ctx.stroke();
-
-      for (let i = 0; i < P.length; i++) {
-        const r = 1.3 + Math.sqrt(pts[i].d) * 0.42;
-        ctx.fillStyle = 'rgba(228,233,242,0.85)';
-        ctx.beginPath(); ctx.arc(P[i][0], P[i][1], r, 0, 6.283); ctx.fill();
-      }
-
-      if (!reduce) {
-        if (Math.random() < 0.3 && pulses.length < 46 && hot.length) {
-          const e = hot[Math.floor(Math.random() * hot.length)];
-          pulses.push({ e, t: 0, dir: Math.random() < 0.5, sp: 0.006 + Math.random() * 0.01 });
-        }
-        for (let k = pulses.length - 1; k >= 0; k--) {
-          const p = pulses[k];
-          p.t += p.sp;
-          if (p.t >= 1) { pulses.splice(k, 1); continue; }
-          const A = P[p.dir ? p.e[0] : p.e[1]], B = P[p.dir ? p.e[1] : p.e[0]];
-          const x = A[0] + (B[0] - A[0]) * p.t, y = A[1] + (B[1] - A[1]) * p.t;
-          const g = ctx.createRadialGradient(x, y, 0, x, y, 7);
-          g.addColorStop(0, 'rgba(255,140,90,1)'); g.addColorStop(0.35, 'rgba(255,84,40,0.7)'); g.addColorStop(1, 'rgba(255,84,40,0)');
-          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 7, 0, 6.283); ctx.fill();
-        }
-      }
-
+      let best = -1;
       if (mouse) {
-        let best = -1, bd = 900;
-        P.forEach((q, i) => { const dd = (q[0] - mouse[0]) ** 2 + (q[1] - mouse[1]) ** 2; if (dd < bd) { bd = dd; best = i; } });
-        if (best >= 0) {
-          const q = P[best];
-          ctx.strokeStyle = 'rgba(255,122,85,0.85)'; ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          let enemies = 0;
-          for (const [a, b] of E) if (a === best || b === best) { enemies++; ctx.moveTo(P[a][0], P[a][1]); ctx.lineTo(P[b][0], P[b][1]); }
-          ctx.stroke();
-          ctx.fillStyle = '#ff7a55'; ctx.beginPath(); ctx.arc(q[0], q[1], 4.5, 0, 6.283); ctx.fill();
-          const label = 'r/' + pts[best].id;
-          ctx.font = '600 13px "IBM Plex Mono", monospace';
-          const w = ctx.measureText(label).width;
-          const lx = Math.min(q[0] + 12, W - w - 16), ly = q[1] - 14;
-          ctx.fillStyle = 'rgba(12,16,24,0.85)'; ctx.fillRect(lx - 6, ly - 15, w + 12, 36);
-          ctx.fillStyle = '#ffffff'; ctx.fillText(label, lx, ly);
-          ctx.font = '400 11px "IBM Plex Mono", monospace'; ctx.fillStyle = '#8a93a6';
-          ctx.fillText(pts[best].d + ' enemies in total', lx, ly + 15);
-        }
+        let bd = 30 * 30;
+        pts.forEach((p, i) => { const dd = (p.x - mouse[0]) ** 2 + (p.y - mouse[1]) ** 2; if (dd < bd) { bd = dd; best = i; } });
       }
-      if (!reduce && running) raf = requestAnimationFrame(frame);
+      const dim = best >= 0 ? 0.35 : 1;
+      strokeEdges((e) => !e[2], col.neutral, 0.55 * dim, 0.8);
+      strokeEdges((e) => e[2], col.hot, 0.3 * dim, 0.8);
+      ctx.fillStyle = col.ink;
+      ctx.globalAlpha = best >= 0 ? 0.4 : 0.9;
+      pts.forEach((p) => { ctx.beginPath(); ctx.arc(p.x, p.y, 1.4 + Math.sqrt(p.d) * 0.4, 0, 6.283); ctx.fill(); });
+      ctx.globalAlpha = 1;
+      if (best < 0) return;
+
+      const near = new Set([best]);
+      strokeEdges((e) => { const hit = e[0] === best || e[1] === best; if (hit) { near.add(e[0]); near.add(e[1]); } return hit; }, col.ink, 0.8, 1);
+      ctx.fillStyle = col.ink;
+      near.forEach((i) => { const p = pts[i]; ctx.beginPath(); ctx.arc(p.x, p.y, 1.6 + Math.sqrt(p.d) * 0.4, 0, 6.283); ctx.fill(); });
+      const q = pts[best];
+      ctx.fillStyle = col.hot; ctx.beginPath(); ctx.arc(q.x, q.y, 4.5, 0, 6.283); ctx.fill();
+
+      const l1 = 'r/' + q.id, l2 = q.d + ' hostile pairs in the full network';
+      ctx.font = '600 14px "IBM Plex Sans", sans-serif';
+      const w1 = ctx.measureText(l1).width;
+      ctx.font = '400 12.5px "IBM Plex Sans", sans-serif';
+      const w = Math.max(w1, ctx.measureText(l2).width);
+      const lx = Math.max(4, Math.min(q.x + 12, W - w - 18)), ly = q.y > 60 ? q.y - 50 : q.y + 14;
+      ctx.fillStyle = col.paper; ctx.strokeStyle = col.rule; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.rect(lx, ly, w + 14, 40); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = col['ink-2']; ctx.fillText(l2, lx + 7, ly + 32);
+      ctx.font = '600 14px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = col.ink; ctx.fillText(l1, lx + 7, ly + 16);
     }
     layout();
-    frame(0);
-    window.addEventListener('resize', () => { layout(); if (reduce) frame(0); });
-    cv.addEventListener('mousemove', (e) => { const r = cv.getBoundingClientRect(); mouse = [e.clientX - r.left, e.clientY - r.top]; if (reduce) frame(0); });
-    cv.addEventListener('mouseleave', () => { mouse = null; if (reduce) frame(0); });
-    if ('IntersectionObserver' in window && !reduce) {
-      new IntersectionObserver((entries) => {
-        const vis = entries[0].isIntersecting;
-        if (vis && !running) { running = true; raf = requestAnimationFrame(frame); }
-        if (!vis) { running = false; cancelAnimationFrame(raf); }
-      }).observe(cv);
-    }
+    window.addEventListener('resize', layout);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', layout);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+    const move = (e) => { const r = cv.getBoundingClientRect(); mouse = [e.clientX - r.left, e.clientY - r.top]; draw(); };
+    cv.addEventListener('pointermove', move);
+    cv.addEventListener('pointerdown', move);
+    cv.addEventListener('pointerleave', () => { mouse = null; draw(); });
   })();
 
   // ---------- intro: longest feuds ----------
@@ -241,7 +183,7 @@
     const max = Math.max(...D.top_feuds.map((f) => f.n));
     D.top_feuds.forEach((f, i) => {
       const li = document.createElement('li');
-      li.innerHTML = `<span class="names"><span class="fill" style="transition-delay:${i * 70}ms"></span>r/${f.a}<i>&harr;</i>r/${f.b}</span><span class="n">${f.n}</span>`;
+      li.innerHTML = `<span class="names"><span class="fill"></span>r/${f.a}<i>&harr;</i>r/${f.b}</span><span class="n">${f.n}</span>`;
       ol.appendChild(li);
     });
     onView(ol, () => {
@@ -263,7 +205,7 @@
     const attackLbl = txt(svg, W / 2, 104, 'the attack', 't-hot', { 'text-anchor': 'middle' });
     const P0 = [B[0] - 12, A[1] + 26], P1 = [A[0] + 12, A[1] + 26];
     s('path', { d: `M${P0[0]},${P0[1]} Q${cBot[0]},${cBot[1]} ${P1[0]},${P1[1]}`, fill: 'none', class: 's-neutral', 'stroke-width': 1.5, 'stroke-dasharray': '3 6' }, svg);
-    const backLbl = txt(svg, W / 2, H - 4, `${ex.n_back} links back · chance said ${fmt.pct0(ex.expected)} for even one hostile`, 't-muted', { 'text-anchor': 'middle', 'font-size': W < 420 ? 10.5 : 12 });
+    const backLbl = txt(svg, W / 2, H - 4, `${ex.n_back} links back`, 't-muted', { 'text-anchor': 'middle', 'font-size': W < 420 ? 10.5 : 12 });
 
     [[A, 'r/' + ex.a], [B, 'r/' + ex.b]].forEach(([p, name]) => {
       s('circle', { cx: p[0], cy: p[1], r: 20, class: 'f-ink' }, svg);
@@ -280,8 +222,8 @@
       c.style.transform = 'scale(0)';
       dots.push(c);
     }
-    const big = txt(svg, W / 2, 186, `${ex.neg_back} of ${ex.n_back}`, 't-hot t-display', { 'text-anchor': 'middle', 'font-size': 40, 'font-weight': 800, opacity: 0 });
-    const small1 = txt(svg, W / 2, 206, 'replies were hostile', 't-strong', { 'text-anchor': 'middle', opacity: 0 });
+    const big = txt(svg, W / 2, 186, `${ex.neg_back} of ${ex.n_back}`, 't-hot t-display', { 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 600, opacity: 0 });
+    const small1 = txt(svg, W / 2, 206, 'were hostile', 't-strong', { 'text-anchor': 'middle', opacity: 0 });
     const small2 = s('g', {}, svg);
     [attackLbl, backLbl].forEach((t) => t.setAttribute('opacity', 0));
 
@@ -340,7 +282,7 @@
         const bins = ch1Set === 'all' ? D.bins_all : D.bins_clean;
         bins.forEach((bn, i) => {
           const clear = bn.z >= 1.96;
-          groups[i].verdict.textContent = clear ? '▲ clearly above chance' : '≈ within noise';
+          groups[i].verdict.textContent = clear ? 'above chance' : 'not different from chance';
           groups[i].verdict.setAttribute('class', clear ? 't-hot' : 't-muted');
         });
       }
@@ -401,7 +343,7 @@
       return { pl, dots, cum, total, lbl, pts };
     });
     const first = Math.min(...series.map(([key]) => D.prox_lines[key][0].rate));
-    const ann1 = txt(svg, xs[0] + 4, Math.min(y(first) + 24, y(0) - 6), `all start near ${fmt.pct0(D.prox_lines.average[0].rate)}`, 't-strong halo', { 'font-size': 12, opacity: 0 });
+    const ann1 = txt(svg, xs[0] + 4, Math.min(y(first) + 24, y(0) - 6), `all three near ${fmt.pct0(D.prox_lines.average[0].rate)}`, 't-strong halo', { 'font-size': 12, opacity: 0 });
     ann1.style.transition = 'opacity .5s';
     const dEnd = last(lines[2].pts), cEnd = last(lines[0].pts);
     const bx = dEnd[0] - 18;
@@ -448,9 +390,9 @@
     const P = D.permutation, kk = Math.round(P.p * (P.n_draws + 1)) - 1;
     const el = document.getElementById('perm-sentence');
     const lead = kk <= 0
-      ? `In none of the ${fmt.int(P.n_draws)} shuffles was the effect as strong as in our data.`
-      : `Only ${kk} of the ${fmt.int(P.n_draws)} shuffles produced an effect as strong as ours.`;
-    el.innerHTML = `${lead} <b>This is the strongest result in our analysis</b>, and it holds with hub subreddits included or removed.`;
+      ? `None of the ${fmt.int(P.n_draws)} shuffles gave an effect as strong as the real one.`
+      : `Only ${kk} of the ${fmt.int(P.n_draws)} shuffles gave an effect as strong as the real one.`;
+    el.textContent = `${lead} The result is also the same with and without hubs, so this is the finding we trust the most.`;
   })();
   mount('perm', (el, W) => {
     const H = 240, l = 16, r = 16, t = 56, b = 40;
@@ -472,12 +414,12 @@
     const bars = counts.map((c, i) => s('rect', { x: x(lo + i * width) + 0.5, width: Math.max(1, x(lo + (i + 1) * width) - x(lo + i * width) - 1), y: base, height: 0, class: 'f-neutral' }, svg));
     s('line', { x1: l, x2: W - r, y1: base, y2: base, class: 's-rule' }, svg);
     const mean = nul.reduce((a, v) => a + v, 0) / nul.length;
-    txt(svg, x(mean), t - 18, `${fmt.int(P.n_draws)} random shuffles`, 't-muted', { 'text-anchor': 'middle', 'font-size': 11.5 });
+    txt(svg, x(mean), t - 18, `${fmt.int(P.n_draws)} shuffles`, 't-muted', { 'text-anchor': 'middle', 'font-size': 11.5 });
     const obsG = s('g', { opacity: 0 }, svg);
     obsG.style.transition = 'opacity .6s';
     s('line', { x1: x(obs), x2: x(obs), y1: t - 26, y2: base, class: 's-hot', 'stroke-width': 3 }, obsG);
     s('circle', { cx: x(obs), cy: base, r: 6, class: 'f-hot' }, obsG);
-    txt(obsG, x(obs) + 8, t - 16, `our data: ${fmt.coef(obs)}`, 't-hot', { 'font-size': 13 });
+    txt(obsG, x(obs) + 8, t - 16, `real data: ${fmt.coef(obs)}`, 't-hot', { 'font-size': 13 });
     function draw(p) {
       counts.forEach((c, i) => {
         const local = Math.max(0, Math.min(1, p * 1.6 - (i / nb) * 0.6));
@@ -512,10 +454,10 @@
     const rand = rng(11);
     const dotsG = s('g', { opacity: 0 }, svg);
     T.null.forEach((v) => s('circle', { cx: x(v), cy: t + 8 + rand() * (base - t - 16), r: 2.4, class: 'f-neutral', opacity: 0.6 }, dotsG));
-    txt(svg, x(T.null_mean), t - 14, '500 random networks', 't-muted', { 'text-anchor': 'middle', 'font-size': 11.5 });
+    txt(svg, x(T.null_mean), t - 14, `random networks (about ${fmt.int(T.null_mean)})`, 't-muted', { 'text-anchor': 'middle', 'font-size': 11.5 });
     const mk = s('g', { opacity: 0 }, svg);
     const ring = s('circle', { cx: x(T.null_mean), cy: (t + base) / 2, r: 9, class: 'f-hot' }, mk);
-    const lbl = txt(svg, x(T.observed), t - 14, 'the real network', 't-hot', { 'text-anchor': 'end', 'font-size': 12.5, opacity: 0 });
+    const lbl = txt(svg, x(T.observed), t - 14, `real network: ${fmt.int(T.observed)}`, 't-hot', { 'text-anchor': 'end', 'font-size': 12.5, opacity: 0 });
     function final() { dotsG.setAttribute('opacity', 1); mk.setAttribute('opacity', 1); ring.setAttribute('cx', x(T.observed)); lbl.setAttribute('opacity', 1); }
     function play() {
       if (reduce) { final(); return; }
@@ -529,15 +471,13 @@
   });
 
   mount('net-examples', (el, W) => {
-    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'Two real examples';
-    el.appendChild(title);
     const H = 360;
     const svg = svgIn(el, W, H);
     const [i1, i2] = D.examples_net.isolated, tri = D.examples_net.triangle;
-    txt(svg, W / 2, 18, 'one-on-one rivalry', 't-muted', { 'text-anchor': 'middle', 'font-size': 11.5 });
+    txt(svg, W / 2, 18, 'a pair that is alone', 't-muted', { 'text-anchor': 'middle', 'font-size': 11.5 });
     const p1 = [W * 0.25, 62], p2 = [W * 0.75, 62];
     const e1 = s('line', { x1: p1[0], y1: p1[1], x2: p2[0], y2: p2[1], class: 's-neutral', 'stroke-width': 3 }, svg);
-    txt(svg, W / 2, 178, 'a clique: all three are enemies', 't-hot', { 'text-anchor': 'middle', 'font-size': 11.5 });
+    txt(svg, W / 2, 178, 'a triangle', 't-hot', { 'text-anchor': 'middle', 'font-size': 11.5 });
     const q = [[W / 2, 216], [W * 0.22, 306], [W * 0.78, 306]];
     const triEdges = [[0, 1], [1, 2], [2, 0]].map(([a, b2]) => s('line', { x1: q[a][0], y1: q[a][1], x2: q[b2][0], y2: q[b2][1], class: 's-hot', 'stroke-width': 3 }, svg));
     [[p1, i1, 30], [p2, i2, 30], [q[0], tri[0], -20], [q[1], tri[1], 30], [q[2], tri[2], 30]].forEach(([p, name, dy]) => {
@@ -553,11 +493,9 @@
   });
 
   mount('clique-prox', (el, W) => {
-    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'How many users the two sides share';
-    el.appendChild(title);
     const H = 250, C = D.clique_prox, vmax = 0.7, bw = W - 64;
     const svg = svgIn(el, W, H);
-    const rows = [['One-on-one rivalries', C.isolated, 'f-calm', 't-calm', 40], ['Rivalries inside a clique', C.clique, 'f-hot', 't-hot', 120]];
+    const rows = [['Pairs that are alone', C.isolated, 'f-calm', 't-calm', 40], ['Pairs inside a triangle', C.clique, 'f-hot', 't-hot', 120]];
     const bars = rows.map(([label, v, fc, tc, yy]) => {
       txt(svg, 0, yy, label, 't-strong', { 'font-size': 12.5 });
       s('rect', { x: 0, y: yy + 10, width: bw, height: 30, rx: 4, class: 'f-neutral', opacity: 0.18 }, svg);
@@ -566,7 +504,7 @@
       return { rc, vt, v };
     });
     const note = txt(svg, 0, 212, '', 't-muted', { 'font-size': 11 });
-    [['similarity of their user bases, 0 to 1.'], [`Without hubs: ${fmt.d2(C.isolated_clean)} vs. ${fmt.d2(C.clique_clean)}.`]].forEach(([line], j) => {
+    [['Closeness goes from 0 to 1.'], [`Without hubs: ${fmt.d2(C.isolated_clean)} and ${fmt.d2(C.clique_clean)}.`]].forEach(([line], j) => {
       const ts = s('tspan', { x: 0, dy: j ? 15 : 0 }, note); ts.textContent = line;
     });
     function draw(p) {
@@ -602,9 +540,9 @@
     const endDot = s('circle', { cx: x1, cy: y, r: 8, class: 'f-hot pop' }, svg);
     endDot.style.transform = 'scale(0)';
     const lB = txt(svg, x1, y + 48, '', 't-strong', { 'font-size': 13, 'text-anchor': 'end', opacity: 0 });
-    [[`r/${L.second} hits back`], [niceDate(L.t2)]].forEach(([line], j) => { const ts = s('tspan', { x: x1, dy: j ? 17 : 0, class: j ? 't-muted' : '' }, lB); ts.textContent = line; });
+    [[`r/${L.second} answers`], [niceDate(L.t2)]].forEach(([line], j) => { const ts = s('tspan', { x: x1, dy: j ? 17 : 0, class: j ? 't-muted' : '' }, lB); ts.textContent = line; });
     const runner = s('circle', { cx: x0, cy: y, r: 5, class: 'f-hot' }, svg);
-    const counter = txt(svg, W / 2, y - 22, '0 days', 't-display t-strong', { 'text-anchor': 'middle', 'font-size': 26, 'font-weight': 700 });
+    const counter = txt(svg, W / 2, y - 22, '0 days', 't-display t-strong', { 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 600 });
     function at(p) {
       const xx = x0 + (x1 - x0) * p;
       prog.setAttribute('x2', xx); runner.setAttribute('cx', xx);
@@ -659,8 +597,6 @@
   });
 
   mount('esc-fig', (el, W) => {
-    const title = document.createElement('p'); title.className = 'fig-title'; title.textContent = 'How negative a feud is, early vs. late';
-    el.appendChild(title);
     const H = 250, E2 = D.escalation, t = 30, b = 54, ymax = 0.5;
     const svg = svgIn(el, W, H);
     const y = (v) => t + (1 - v / ymax) * (H - t - b);
@@ -677,7 +613,7 @@
     const tb = txt(svg, xb, y(E2.second) - 16, fmt.pct1(E2.second), 't-strong', { 'text-anchor': 'middle', 'font-size': 14, opacity: 0 });
     txt(svg, xa, H - b + 24, 'first half', 't-muted', { 'text-anchor': 'middle' });
     txt(svg, xb, H - b + 24, 'second half', 't-muted', { 'text-anchor': 'middle' });
-    txt(svg, W / 2, H - 6, `${fmt.int(E2.n)} feuds · p = ${fmt.p(E2.p)}`, 't-muted', { 'text-anchor': 'middle', 'font-size': 11 });
+    txt(svg, W / 2, H - 6, `${fmt.int(E2.n)} pairs, p = ${fmt.p(E2.p)}`, 't-muted', { 'text-anchor': 'middle', 'font-size': 11 });
     function at(p) { ln.setAttribute('x2', xa + (xb - xa) * p); ln.setAttribute('y2', y(E2.first + (E2.second - E2.first) * p)); }
     function final() { at(1); cb.style.transform = 'scale(1)'; tb.setAttribute('opacity', 1); }
     return { play: () => tween(1100, at, final), final };
