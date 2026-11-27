@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bad Blood (draft)</title>
+<meta name="description" content="Draft: what happens after one subreddit is in conflict with another, using the RQ1 definition of conflict.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="style.css?v=1">
+<style>
+  .draft-note { position: absolute; top: 0; left: 0; right: 0; z-index: 5; padding: 9px 16px; font: 13.5px/1.4 var(--f-sans); color: #c9cfdb; background: rgba(12,16,24,.72); text-align: center; }
+  .draft-note a { color: #fff; }
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<div class="progress" aria-hidden="true"><div class="progress-bar"></div></div>
+
+<header class="hero">
+  <p class="draft-note">Draft that uses the conflict definition of RQ1 (480 conflicts). <a href="../">Current version</a></p>
+  <canvas id="net" aria-label="Network of subreddits connected by conflicts"></canvas>
+  <div class="hero-inner">
+    <h1>Bad <span class="hot-text">Blood</span></h1>
+    <p class="dek">What happens when one subreddit is in conflict with another? We looked at 858,488 links between Reddit communities and found 480 conflicts, to see who answers, when, and why.</p>
+    <p class="hero-hint">Each dot is a subreddit and each line a conflict. Red lines belong to triangles of three communities.<span class="desk-only"> Move over a dot to see its name.</span></p>
+  </div>
+</header>
+
+<main>
+
+<section id="intro" class="prose">
+  <p class="lead reveal">On Reddit, communities talk about each other all the time. A post in one subreddit links to a post in another, and sometimes that link is an attack: people mock the other community, call it out or try to start a fight.</p>
+  <p class="reveal">We used the Stanford SNAP dataset, which covers January 2014 to April 2017. Each link has a label that says if the post is negative, and about <b data-k="totals.neg_share" data-f="pct0">–</b> of them are. But a negative post is not always an attack. When we read the negative links of the active communities, only <b data-k="link_labels.attack" data-f="pct0">–</b> attacked the other community. Most of them were criticism of something posted there.</p>
+  <p class="reveal">So we do not look at single negative links. We say that A is <b>in conflict</b> with B when A is clearly more negative with B than links on Reddit usually are. A pair needs at least four negative links, and more if it has many links in total. Among the <b data-k="totals.analysis_set" data-f="int">–</b> most active communities, this gives <b data-k="totals.conflicts" data-f="int">–</b> conflicts.</p>
+  <figure class="feuds reveal">
+    <ol id="feuds"></ol>
+    <figcaption>The ten conflicts with the most negative links. A conflict has a direction: the first community is negative with the second.</figcaption>
+  </figure>
+  <p class="reveal">In this part of the project we ask what happens next. Does the other community answer? Does it depend on who they are? And how long does it take?</p>
+</section>
+
+<section id="hook" class="chapter">
+  <div class="chapter-head reveal">
+    <h2>r/mensrights and r/againstmensrights</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">r/mensrights is a forum about men's rights issues. r/againstmensrights was created to criticise it. Between 2014 and 2017 the two communities linked to each other <b data-k="derived.pair_total" data-f="int">–</b> times, and the conflict goes both ways:</p>
+  </div>
+  <div class="exchange wide" id="pair-quotes"></div>
+  <div class="prose">
+    <p class="reveal">r/againstmensrights does most of the talking. <b data-k="pair_example.base_b" data-f="pct0">–</b> of all its links are negative, and <b data-k="derived.pair_share_b" data-f="pct0">–</b> of the ones to r/mensrights. r/mensrights almost never links back, only nine times in three years. But when it does, it is unusually negative: <b data-k="derived.pair_share_a" data-f="pct0">–</b> of those links, when its usual share is <b data-k="pair_example.base_a" data-f="pct0">–</b>.</p>
+  </div>
+  <figure class="wide reveal" id="hook-fig"></figure>
+  <p class="prose reveal">This is the comparison we make for every conflict: when the target links back, is it more negative than usual? One pair does not tell us much, so we repeated it for all of them.</p>
+</section>
+
+<section id="ch1" class="chapter">
+  <div class="chapter-head reveal">
+    <h2>Do conflicts get answered?</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">In <b data-k="n_checkable" data-f="int">–</b> of the <b data-k="n_forward_hostile" data-f="int">–</b> conflicts, the target linked back at least once. In the others it simply ignored the community in conflict with it.</p>
+    <p class="reveal">To know if an answer is unusual, we need something to compare with. We use the <b data-k="totals.calm" data-f="int">–</b> calm pairs, where A is clearly <i>not</i> more negative with B than usual. If targets always behaved as usual, both groups would match chance.</p>
+  </div>
+  <figure class="wide reveal" id="ch1-fig">
+    <div class="toggle" role="tablist" aria-label="Which pairs to show">
+      <button role="tab" aria-selected="true" data-set="all">Conflicts</button>
+      <button role="tab" aria-selected="false" data-set="clean">Calm pairs</button>
+    </div>
+    <div class="chart" id="bars"></div>
+    <div class="legend"><span><i class="sw hot"></i>Targets that sent a negative link back</span><span><i class="sw neutral"></i>Expected from their usual behaviour</span></div>
+    <figcaption>Share of targets that sent at least one negative link back, in three groups by how many links they sent back.</figcaption>
+  </figure>
+  <div class="prose">
+    <p class="reveal">In conflicts, targets send <b data-k="answers.conflict.k_obs" data-f="int">–</b> negative links back, where we would expect <b data-k="answers.conflict.k_exp" data-f="int">–</b> (<b data-k="answers.conflict.ratio" data-f="x1">–</b>). In calm pairs it goes the other way: <b data-k="answers.calm.ratio" data-f="x1">–</b>. Taking into account how negative each target usually is and how many links it sends back, a target is <b data-k="answers.odds_ratio" data-f="x1">–</b> more likely to be negative with a community in conflict with it (in odds).</p>
+    <p class="reveal">The difference is clearest when the target links back only once or twice. When two communities talk a lot, the answers look like usual.</p>
+    <p class="reveal callout-line">So conflicts do get answered, a little. But a real two-way conflict is rare: only <b data-k="answers.conflict.rev_conf" data-f="int">–</b> of the <b data-k="n_checkable" data-f="int">–</b> answers are a conflict themselves.</p>
+  </div>
+</section>
+
+<section id="ch2" class="chapter">
+  <div class="chapter-head reveal">
+    <h2>Does closeness change the answer?</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">Two subreddits are close if many of the same users post in both. With our first definition (every pair with a negative link, <span data-k="model.broad_def.pairs" data-f="int">–</span> pairs), close communities answered with less hostility when they talked a lot. We tested the same thing on the <b data-k="permutation.pairs" data-f="int">–</b> conflicts that got a reply.</p>
+    <p class="reveal">To see if the effect could be a coincidence, we shuffled the closeness values between pairs, so that they no longer mean anything, and measured the effect again. We did this <b data-k="permutation.n_draws" data-f="int">–</b> times.</p>
+  </div>
+  <figure class="wide reveal" id="perm-fig">
+    <div class="chart" id="perm"></div>
+    <figcaption>Size of the effect with shuffled closeness (grey) and in the real data (red). The effect is the interaction between contact and closeness in a logistic regression. More to the left means that closeness matters more when there is more contact.</figcaption>
+  </figure>
+  <div class="prose">
+    <p class="reveal" id="perm-sentence"></p>
+    <p class="reveal callout-line">The effect has the same size as before (<span data-k="model.all.coef" data-f="coef">–</span>, before <span data-k="model.broad_def.coef" data-f="coef">–</span>), but there are too few conflicts to be sure. We keep it as a hint, not as a result.</p>
+  </div>
+</section>
+
+<section id="ch3" class="chapter">
+  <div class="chapter-head reveal">
+    <h2>Common enemies</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">Until now we looked at pairs. But if two communities are both in conflict with a third one, are they also in conflict with each other?</p>
+    <p class="reveal">To answer this we counted triangles: groups of three subreddits where every pair has a conflict, in one direction or both. Then we built 500 random networks in which each subreddit keeps the same number of conflicts but with random partners, and counted the triangles there.</p>
+  </div>
+  <figure class="wide reveal" id="tri-fig">
+    <div class="chart" id="tri-strip"></div>
+    <figcaption>Number of triangles in each of the 500 random networks (grey dots) and in the real network (red).</figcaption>
+  </figure>
+  <div class="prose">
+    <p class="reveal">The real network has <b data-k="triangles.observed" data-f="int">–</b> triangles, and the random ones <b data-k="triangles.null_mean" data-f="int">–</b> on average, so <b data-k="derived.tri_ratio" data-f="x1">–</b> as many. We can also count how many conflicts are part of at least one triangle: <b data-k="derived.in_tri_share" data-f="pct0">–</b> in the real network, against about <b data-k="derived.in_tri_null_share" data-f="pct0">–</b> in the random ones.</p>
+  </div>
+  <figure class="wide reveal" id="nested-fig"></figure>
+  <div class="prose">
+    <p class="reveal">These triangles are not three-way wars. In almost all of them only two communities attack: both attack the same large subreddit, often r/news, r/worldnews or r/askreddit, and one of them also attacks the other. Only <b data-k="triangles.three_way" data-f="int">–</b> triangles have all three communities attacking, and all of them are about GamerGate. A typical triangle:</p>
+  </div>
+  <div class="posts three wide" id="tri-example"></div>
+  <div class="prose">
+    <p class="reveal">We expected these groups to be made of similar communities that share users. We found the opposite.</p>
+  </div>
+  <div class="duo">
+    <figure class="reveal" id="net-examples"></figure>
+    <figure class="reveal" id="clique-prox"></figure>
+  </div>
+  <div class="prose">
+    <p class="reveal callout-line">Conflicts that are alone are usually between a subreddit and its parody, like r/starwars and r/empiredidnothingwrong. Conflicts inside a triangle connect communities that are more distant. A shared enemy brings together parts of Reddit that normally do not have much in common.</p>
+  </div>
+</section>
+
+<section id="ch4" class="chapter">
+  <div class="chapter-head reveal">
+    <h2>It takes months, and it does not get worse</h2>
+  </div>
+  <div class="prose">
+    <p class="reveal">In <b data-k="lags.all" data-f="int">–</b> conflicts the target sent a negative link back at some point. In <b data-k="lags.b_first" data-f="pct0">–</b> of them the target had been negative first, so we cannot say who started. For the other <b data-k="lags.n" data-f="int">–</b> we measured the time between the first negative link and the first negative answer. This is the case closest to the median, from the 2016 US election:</p>
+  </div>
+  <figure class="wide reveal" id="timeline-fig"></figure>
+  <figure class="wide reveal" id="lag-fig">
+    <div class="chart" id="lags"></div>
+    <figcaption>Time between the first negative link and the first negative answer, for the conflicts where the target answered after.</figcaption>
+  </figure>
+  <div class="prose">
+    <p class="reveal">Only <b data-k="lags.within30" data-f="pct0">–</b> of the answers arrive in the first month, and half take more than <b data-k="lags.median" data-f="int">–</b> days. This does not look like a reaction to one attack. It looks more like two communities that do not like each other for a long time.</p>
+    <p class="reveal">We also checked if conflicts get worse with time. For each conflict we split its links in two halves, the early ones and the late ones, and compared the share of negative links.</p>
+  </div>
+  <figure class="reveal narrow" id="esc-fig"></figure>
+  <div class="prose">
+    <p class="reveal callout-line">The share goes down a little, from <span data-k="escalation.first" data-f="pct0">–</span> to <span data-k="escalation.second" data-f="pct0">–</span>. Conflicts do not escalate. If anything, they calm down slowly.</p>
+  </div>
+</section>
+
+<section id="end" class="chapter">
+  <div class="chapter-head reveal">
+    <h2>Summary</h2>
+  </div>
+  <div class="prose">
+    <ol class="summary reveal">
+      <li><b>Conflicts are answered, a little.</b> Targets that link back are more negative than usual, while in calm pairs they are less negative than usual. But most targets never link back, and two-way conflicts are rare.</li>
+      <li><b>Closeness is only a hint.</b> Close communities seem to answer with less hostility when they talk a lot, as with our first definition, but with 182 conflicts we cannot be sure.</li>
+      <li><b>Conflicts share enemies.</b> There are 1.7 times more triangles than expected. Most of them are two communities attacking the same large subreddit, and the pairs inside them are more distant than the pairs that are alone.</li>
+      <li><b>It takes months.</b> Answers take months, not days, and conflicts do not become more negative with time.</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <details class="methods reveal">
+      <summary>Methods and limits</summary>
+      <dl>
+        <dt>Negative link</dt><dd>The label given by SNAP (link_sentiment = &minus;1). Dataset from Kumar et al., <i>Community Interaction and Conflict on the Web</i>, WWW 2018.</dd>
+        <dt>Conflict</dt><dd>Directed pair A &rarr; B inside the <span data-k="totals.analysis_set" data-f="int">–</span> active, English-speaking communities (meta and bot communities excluded). The share of negative links from A to B gets a beta prior centred on the Reddit-wide share (<span data-k="totals.reference" data-f="pct1">–</span>). The pair is a conflict when the 90% interval of the updated share lies above 1.75 times that share, and calm when it lies below.</dd>
+        <dt>Expected by chance</dt><dd>For a target B that sent n links back with a usual share p of negative links, we expect n&middot;p negative links back, and a probability 1 &minus; (1 &minus; p)<sup>n</sup> of at least one.</dd>
+        <dt>Odds ratio</dt><dd>Binomial regression of the share of negative links back on conflict vs calm, B's usual share (logit) and log(links back), with errors clustered by target. Odds ratio <span data-k="answers.odds_ratio" data-f="d2">–</span> (95% CI <span data-k="answers.or_lo" data-f="d2">–</span> to <span data-k="answers.or_hi" data-f="d2">–</span>).</dd>
+        <dt>Closeness</dt><dd>Cosine similarity between the SNAP embeddings of the two subreddits, built from the users that post in each community.</dd>
+        <dt>Triangles</dt><dd>Undirected graph with one edge per pair with a conflict in at least one direction (<span data-k="triangles.edges" data-f="int">–</span> edges). The random networks come from a configuration model that keeps the degree of each subreddit.</dd>
+        <dt>Early vs. late</dt><dd>Links of each conflict split at the median date. Wilcoxon signed-rank test, p = <span data-k="escalation.p" data-f="d2">–</span>.</dd>
+        <dt>Link types</dt><dd>The share of attacks comes from labels made automatically with a language model. They have not been checked by people yet.</dd>
+      </dl>
+      <p>Limits: the SNAP label is based on the tone of the post, not on the intention. Most conflicts come from communities that are negative with everyone, so a conflict partly describes the sender. The random networks do not keep the direction of conflicts, and large subreddits that are attacked by many communities make triangles easier. All of this is observational.</p>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <p>CS-401 Applied Data Analysis, EPFL, 2026. Data: Stanford SNAP Reddit Hyperlink Network.</p>
+</footer>
+
+<script src="data.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
