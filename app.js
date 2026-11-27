@@ -257,21 +257,70 @@
   })();
 
   // ---------- real posts ----------
-  function quoteCards(el, quotes, about) {
-    quotes.forEach((q) => {
-      const card = document.createElement('a');
-      card.className = 'quote';
-      card.href = q.url; card.target = '_blank'; card.rel = 'noopener';
-      const who = document.createElement('span'); who.className = 'quote-who';
-      who.textContent = about ? `r/${q.source} about r/${q.target}` : `r/${q.source} to r/${q.target}`;
-      const t = document.createElement('span'); t.className = 'quote-text'; t.textContent = q.title;
-      const d = document.createElement('span'); d.className = 'quote-date'; d.textContent = niceDate(q.date);
-      card.append(who, t, d);
-      el.appendChild(card);
+  // Each subreddit keeps its own colour wherever its posts appear.
+  const SUB_TONE = { bitcoin: 1, buttcoin: 2, hillaryclinton: 1, the_donald: 3, sandersforpresident: 4, protectandserve: 1, bad_cop_no_donut: 4 };
+  const tone = (name) => `var(--s${SUB_TONE[name] || 1})`;
+  const el_ = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  function avatar(name, big) {
+    const a = el_('span', big ? 'sub-av big' : 'sub-av', name.replace(/_/g, '')[0].toUpperCase());
+    a.style.background = tone(name);
+    a.setAttribute('aria-hidden', 'true');
+    return a;
+  }
+  function postCard(q) {
+    const card = el_('a', 'post');
+    card.href = q.url; card.target = '_blank'; card.rel = 'noopener';
+    card.style.setProperty('--c', tone(q.source));
+    const head = el_('span', 'post-head');
+    const who = el_('span', 'post-who');
+    const to = el_('span', 'post-to');
+    to.append(el_('span', 'post-arrow', '→ '), document.createTextNode(`r/${q.target}`));
+    who.append(el_('span', 'post-from', `r/${q.source}`), to);
+    const open = el_('span', 'post-open', '↗');
+    open.title = 'Open on Reddit';
+    head.append(avatar(q.source), who, open);
+    card.setAttribute('aria-label', `r/${q.source} to r/${q.target}, ${niceDate(q.date)}: ${q.title} (opens Reddit)`);
+    card.append(head, el_('span', 'post-title', q.title), el_('span', 'post-date', niceDate(q.date)));
+    return card;
+  }
+  function slideIn(items, step) {
+    items.forEach((it, i) => {
+      if (reduce) { it.classList.add('in'); return; }
+      it.style.transitionDelay = `${(i % 4) * (step || 120)}ms`;
+      onView(it, () => it.classList.add('in'), 0.25);
     });
   }
-  quoteCards(document.getElementById('pair-quotes'), D.pair_example.quotes, true);
-  quoteCards(document.getElementById('tri-example'), D.triangle_example.quotes, true);
+  function postGrid(el, quotes) {
+    const cards = quotes.map(postCard);
+    cards.forEach((c) => el.appendChild(c));
+    slideIn(cards, 140);
+  }
+
+  // r/bitcoin and r/buttcoin: the posts laid out as an exchange, in date order, one side each.
+  (function exchange() {
+    const el = document.getElementById('pair-quotes');
+    const P = D.pair_example, A = P.a, B = P.b;
+    const head = el_('div', 'ex-head');
+    [[A, B, P.seq_ab], [B, A, P.seq_ba]].forEach(([me, other, seq], i) => {
+      const side = el_('div', `ex-side ${i ? 'right' : 'left'}`);
+      const txtBox = el_('div', 'ex-who');
+      txtBox.append(el_('span', 'ex-name', `r/${me}`), el_('span', 'ex-count', `${seq.length} links to r/${other}, ${sum(seq)} hostile`));
+      side.append(avatar(me, true), txtBox);
+      head.appendChild(side);
+    });
+    const body = el_('div', 'ex-body');
+    const rows = [...P.quotes].sort((x, y) => x.date.localeCompare(y.date)).map((q) => {
+      const row = el_('div', `ex-row ${q.source === A ? 'from-a' : 'from-b'}`);
+      row.append(postCard(q), el_('span', 'ex-dot'), el_('span', 'ex-date', niceDate(q.date)));
+      row.querySelector('.ex-dot').style.background = tone(q.source);
+      body.appendChild(row);
+      return row;
+    });
+    el.append(head, body);
+    slideIn(rows, 0);
+    onView(body, () => body.classList.add('in'), 0.1);
+  })();
+  postGrid(document.getElementById('tri-example'), D.triangle_example.quotes);
 
   // ---------- the example pair: every link in both directions, in time order ----------
   mount('hook-fig', (el, W) => {
@@ -651,9 +700,9 @@
       counter.textContent = `${Math.round(L.days * p)} days`;
     }
     function final() { at(1); endDot.style.transform = 'scale(1)'; lB.setAttribute('opacity', 1); }
-    const qs = document.createElement('div'); qs.className = 'quotes two';
+    const qs = document.createElement('div'); qs.className = 'posts two';
     el.appendChild(qs);
-    quoteCards(qs, [T.attack, T.answer], false);
+    postGrid(qs, [T.attack, T.answer]);
     return { play: () => tween(2600, at, () => { endDot.style.transform = 'scale(1)'; lB.setAttribute('opacity', 1); }), final };
   });
 
